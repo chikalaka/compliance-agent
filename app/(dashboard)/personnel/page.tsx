@@ -1,29 +1,29 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper, DynamicList } from "@/components/form-fields";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import { FieldWrapper, DynamicList } from "@/components/form-fields"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface Person {
-  id: string;
-  name: string;
-  role?: string;
+  id: string
+  name: string
+  role?: string
 }
 
 export default function PersonnelPage() {
-  const [boardMembers, setBoardMembers] = useState<Person[]>([]);
-  const [managementMembers, setManagementMembers] = useState<Person[]>([]);
-  const [orgChart, setOrgChart] = useState("");
-  const [soc2OwnerName, setSoc2OwnerName] = useState("");
-  const [soc2OwnerTitle, setSoc2OwnerTitle] = useState("");
-  const [securityExecName, setSecurityExecName] = useState("");
-  const [securityExecTitle, setSecurityExecTitle] = useState("");
-  const [securityExecSameAsSoc2, setSecurityExecSameAsSoc2] = useState(false);
-  const [employees, setEmployees] = useState<Person[]>([]);
-  const [contractors, setContractors] = useState<Person[]>([]);
+  const [boardMembers, setBoardMembers] = useState<Person[]>([])
+  const [managementMembers, setManagementMembers] = useState<Person[]>([])
+  const [orgChart, setOrgChart] = useState("")
+  const [soc2OwnerName, setSoc2OwnerName] = useState("")
+  const [soc2OwnerTitle, setSoc2OwnerTitle] = useState("")
+  const [securityExecName, setSecurityExecName] = useState("")
+  const [securityExecTitle, setSecurityExecTitle] = useState("")
+  const [securityExecSameAsSoc2, setSecurityExecSameAsSoc2] = useState(false)
+  const [employees, setEmployees] = useState<Person[]>([])
+  const [contractors, setContractors] = useState<Person[]>([])
 
   const getFormData = () => ({
     boardMembers: boardMembers
@@ -43,7 +43,7 @@ export default function PersonnelPage() {
     contractors: contractors
       .filter((p) => p.name)
       .map((p) => ({ name: p.name, role: p.role })),
-  });
+  })
 
   return (
     <SectionForm
@@ -53,7 +53,7 @@ export default function PersonnelPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Board Members
           </h3>
@@ -74,7 +74,7 @@ export default function PersonnelPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Management Team
           </h3>
@@ -95,7 +95,7 @@ export default function PersonnelPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Organizational Chart
           </h3>
@@ -122,7 +122,7 @@ export default function PersonnelPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Compliance & Security Leadership
           </h3>
@@ -194,7 +194,7 @@ export default function PersonnelPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Employees
           </h3>
@@ -215,7 +215,7 @@ export default function PersonnelPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Contractors
           </h3>
@@ -235,6 +235,5 @@ export default function PersonnelPage() {
         </CardContent>
       </Card>
     </SectionForm>
-  );
+  )
 }
-

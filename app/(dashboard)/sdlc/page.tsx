@@ -1,14 +1,18 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper, DynamicList, CheckboxGroup } from "@/components/form-fields";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import {
+  FieldWrapper,
+  DynamicList,
+  CheckboxGroup,
+} from "@/components/form-fields"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface Repo {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 const VERSION_CONTROL_OPTIONS = [
@@ -17,7 +21,7 @@ const VERSION_CONTROL_OPTIONS = [
   { id: "bitbucket", label: "Bitbucket" },
   { id: "azure-devops", label: "Azure DevOps" },
   { id: "other", label: "Other" },
-];
+]
 
 const CICD_OPTIONS = [
   { id: "github-actions", label: "GitHub Actions" },
@@ -28,7 +32,7 @@ const CICD_OPTIONS = [
   { id: "azure-pipelines", label: "Azure Pipelines" },
   { id: "argo", label: "Argo CD" },
   { id: "other", label: "Other" },
-];
+]
 
 const TASK_MANAGEMENT_OPTIONS = [
   { id: "jira", label: "Jira" },
@@ -39,17 +43,17 @@ const TASK_MANAGEMENT_OPTIONS = [
   { id: "gitlab-issues", label: "GitLab Issues" },
   { id: "trello", label: "Trello" },
   { id: "other", label: "Other" },
-];
+]
 
 export default function SdlcPage() {
-  const [versionControl, setVersionControl] = useState<string[]>([]);
-  const [versionControlOther, setVersionControlOther] = useState("");
-  const [productionRepos, setProductionRepos] = useState<Repo[]>([]);
-  const [infraRepos, setInfraRepos] = useState<Repo[]>([]);
-  const [cicdTools, setCicdTools] = useState<string[]>([]);
-  const [cicdOther, setCicdOther] = useState("");
-  const [taskManagement, setTaskManagement] = useState<string[]>([]);
-  const [taskManagementOther, setTaskManagementOther] = useState("");
+  const [versionControl, setVersionControl] = useState<string[]>([])
+  const [versionControlOther, setVersionControlOther] = useState("")
+  const [productionRepos, setProductionRepos] = useState<Repo[]>([])
+  const [infraRepos, setInfraRepos] = useState<Repo[]>([])
+  const [cicdTools, setCicdTools] = useState<string[]>([])
+  const [cicdOther, setCicdOther] = useState("")
+  const [taskManagement, setTaskManagement] = useState<string[]>([])
+  const [taskManagementOther, setTaskManagementOther] = useState("")
 
   const getFormData = () => ({
     versionControl: {
@@ -66,7 +70,7 @@ export default function SdlcPage() {
       tools: taskManagement,
       other: taskManagementOther,
     },
-  });
+  })
 
   return (
     <SectionForm
@@ -76,7 +80,7 @@ export default function SdlcPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Version Control
           </h3>
@@ -106,7 +110,7 @@ export default function SdlcPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Repositories
           </h3>
@@ -136,7 +140,7 @@ export default function SdlcPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             CI/CD
           </h3>
@@ -166,7 +170,7 @@ export default function SdlcPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Task Management
           </h3>
@@ -195,6 +199,5 @@ export default function SdlcPage() {
         </CardContent>
       </Card>
     </SectionForm>
-  );
+  )
 }
-

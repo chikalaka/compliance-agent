@@ -1,15 +1,19 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper, DynamicList, CheckboxGroup } from "@/components/form-fields";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import {
+  FieldWrapper,
+  DynamicList,
+  CheckboxGroup,
+} from "@/components/form-fields"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface Vendor {
-  id: string;
-  name: string;
-  role?: string;
+  id: string
+  name: string
+  role?: string
 }
 
 const COMMUNICATION_TOOLS = [
@@ -18,7 +22,7 @@ const COMMUNICATION_TOOLS = [
   { id: "discord", label: "Discord" },
   { id: "zoom", label: "Zoom" },
   { id: "google-meet", label: "Google Meet" },
-];
+]
 
 const DEVELOPMENT_TOOLS = [
   { id: "github", label: "GitHub" },
@@ -26,14 +30,14 @@ const DEVELOPMENT_TOOLS = [
   { id: "bitbucket", label: "Bitbucket" },
   { id: "vscode", label: "VS Code" },
   { id: "jetbrains", label: "JetBrains IDEs" },
-];
+]
 
 const DESIGN_TOOLS = [
   { id: "figma", label: "Figma" },
   { id: "sketch", label: "Sketch" },
   { id: "adobe-xd", label: "Adobe XD" },
   { id: "canva", label: "Canva" },
-];
+]
 
 const PROJECT_TOOLS = [
   { id: "linear", label: "Linear" },
@@ -43,7 +47,7 @@ const PROJECT_TOOLS = [
   { id: "monday", label: "Monday.com" },
   { id: "clickup", label: "ClickUp" },
   { id: "trello", label: "Trello" },
-];
+]
 
 const CLOUD_PROVIDERS = [
   { id: "aws", label: "AWS" },
@@ -53,7 +57,7 @@ const CLOUD_PROVIDERS = [
   { id: "netlify", label: "Netlify" },
   { id: "heroku", label: "Heroku" },
   { id: "digitalocean", label: "DigitalOcean" },
-];
+]
 
 const DATA_TOOLS = [
   { id: "snowflake", label: "Snowflake" },
@@ -62,17 +66,17 @@ const DATA_TOOLS = [
   { id: "redshift", label: "Redshift" },
   { id: "mongodb", label: "MongoDB Atlas" },
   { id: "postgres", label: "PostgreSQL" },
-];
+]
 
 export default function VendorsToolsPage() {
-  const [criticalVendors, setCriticalVendors] = useState<Vendor[]>([]);
-  const [communicationTools, setCommunicationTools] = useState<string[]>([]);
-  const [developmentTools, setDevelopmentTools] = useState<string[]>([]);
-  const [designTools, setDesignTools] = useState<string[]>([]);
-  const [projectTools, setProjectTools] = useState<string[]>([]);
-  const [cloudProviders, setCloudProviders] = useState<string[]>([]);
-  const [dataTools, setDataTools] = useState<string[]>([]);
-  const [otherTools, setOtherTools] = useState("");
+  const [criticalVendors, setCriticalVendors] = useState<Vendor[]>([])
+  const [communicationTools, setCommunicationTools] = useState<string[]>([])
+  const [developmentTools, setDevelopmentTools] = useState<string[]>([])
+  const [designTools, setDesignTools] = useState<string[]>([])
+  const [projectTools, setProjectTools] = useState<string[]>([])
+  const [cloudProviders, setCloudProviders] = useState<string[]>([])
+  const [dataTools, setDataTools] = useState<string[]>([])
+  const [otherTools, setOtherTools] = useState("")
 
   const getFormData = () => ({
     criticalVendors: criticalVendors
@@ -87,7 +91,7 @@ export default function VendorsToolsPage() {
       data: dataTools,
       other: otherTools,
     },
-  });
+  })
 
   return (
     <SectionForm
@@ -97,7 +101,7 @@ export default function VendorsToolsPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Critical Vendors
           </h3>
@@ -118,7 +122,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Communication Tools
           </h3>
@@ -134,7 +138,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Development Tools
           </h3>
@@ -150,7 +154,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Design Tools
           </h3>
@@ -166,7 +170,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Project Management
           </h3>
@@ -182,7 +186,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Cloud Providers
           </h3>
@@ -198,7 +202,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Data & Database Tools
           </h3>
@@ -214,7 +218,7 @@ export default function VendorsToolsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Other Tools
           </h3>
@@ -234,6 +238,5 @@ export default function VendorsToolsPage() {
         </CardContent>
       </Card>
     </SectionForm>
-  );
+  )
 }
-

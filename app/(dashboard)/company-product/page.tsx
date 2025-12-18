@@ -1,22 +1,26 @@
-"use client";
+"use client"
 
-import { useRef, useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper, DynamicList, CheckboxGroup } from "@/components/form-fields";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useRef, useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import {
+  FieldWrapper,
+  DynamicList,
+  CheckboxGroup,
+} from "@/components/form-fields"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+} from "@/components/ui/select"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface Product {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 const ENTITY_TYPES = [
@@ -27,27 +31,28 @@ const ENTITY_TYPES = [
   { value: "sole-proprietorship", label: "Sole Proprietorship" },
   { value: "nonprofit", label: "Non-Profit" },
   { value: "other", label: "Other" },
-];
+]
 
 const CUSTOMER_TYPES = [
   { id: "enterprise", label: "Enterprise" },
   { id: "smb", label: "SMB" },
   { id: "consumers", label: "Consumers" },
-];
+]
 
 export default function CompanyProductPage() {
-  const [legalName, setLegalName] = useState("");
-  const [hqCountry, setHqCountry] = useState("");
-  const [hqState, setHqState] = useState("");
-  const [entityType, setEntityType] = useState("");
-  const [reviewPeriodFrom, setReviewPeriodFrom] = useState("");
-  const [reviewPeriodTo, setReviewPeriodTo] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [customerTypes, setCustomerTypes] = useState<string[]>([]);
-  const [productDescriptionLocation, setProductDescriptionLocation] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [productArchitecture, setProductArchitecture] = useState("");
-  const [cloudArchitecture, setCloudArchitecture] = useState("");
+  const [legalName, setLegalName] = useState("")
+  const [hqCountry, setHqCountry] = useState("")
+  const [hqState, setHqState] = useState("")
+  const [entityType, setEntityType] = useState("")
+  const [reviewPeriodFrom, setReviewPeriodFrom] = useState("")
+  const [reviewPeriodTo, setReviewPeriodTo] = useState("")
+  const [products, setProducts] = useState<Product[]>([])
+  const [customerTypes, setCustomerTypes] = useState<string[]>([])
+  const [productDescriptionLocation, setProductDescriptionLocation] =
+    useState("")
+  const [productDescription, setProductDescription] = useState("")
+  const [productArchitecture, setProductArchitecture] = useState("")
+  const [cloudArchitecture, setCloudArchitecture] = useState("")
 
   const getFormData = () => ({
     legalName,
@@ -60,7 +65,7 @@ export default function CompanyProductPage() {
     productDescription,
     productArchitecture,
     cloudArchitecture,
-  });
+  })
 
   return (
     <SectionForm
@@ -70,7 +75,7 @@ export default function CompanyProductPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Company Information
           </h3>
@@ -122,7 +127,7 @@ export default function CompanyProductPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Review Period
           </h3>
@@ -150,7 +155,7 @@ export default function CompanyProductPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Products & Customers
           </h3>
@@ -193,7 +198,7 @@ export default function CompanyProductPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Descriptions & Architecture
           </h3>
@@ -242,6 +247,5 @@ export default function CompanyProductPage() {
         </CardContent>
       </Card>
     </SectionForm>
-  );
+  )
 }
-

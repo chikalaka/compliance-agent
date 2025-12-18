@@ -57,7 +57,6 @@ export default function GeneratePoliciesPage() {
     const customPolicy: Policy = {
       id: "custom",
       name: customPolicyName.trim(),
-      description: "Custom policy",
       fileName: `${toKebabCase(customPolicyName)}.md`,
     }
     setSelectedPolicy(customPolicy)
@@ -107,7 +106,7 @@ export default function GeneratePoliciesPage() {
 
           return (
             <Card key={policy.id}>
-              <CardContent className="flex items-center justify-between py-4">
+              <CardContent className="flex items-center justify-between">
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-zinc-900 dark:text-zinc-100">
@@ -123,9 +122,6 @@ export default function GeneratePoliciesPage() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
-                    {policy.description}
-                  </p>
                 </div>
                 <Button
                   onClick={() => handleGenerate(policy)}

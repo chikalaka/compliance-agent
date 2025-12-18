@@ -6,14 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import {
-  Pencil,
-  Trash2,
-  Plus,
-  Download,
-  Loader2,
-  ListTodo,
-} from "lucide-react"
+import { Pencil, Trash2, Plus, Download, Loader2, ListTodo } from "lucide-react"
 import { toast } from "sonner"
 import { TodoDetailModal } from "@/components/todo-detail-modal"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -197,7 +190,7 @@ export default function CustomTodosPage() {
 
       {/* Add New Todo Form */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="">
           <div className="space-y-4">
             <div className="flex gap-3">
               <Input
@@ -312,4 +305,3 @@ export default function CustomTodosPage() {
     </div>
   )
 }
-

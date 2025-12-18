@@ -1,20 +1,20 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper } from "@/components/form-fields";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import { FieldWrapper } from "@/components/form-fields"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function DataProtectionPage() {
-  const [processesCustomerData, setProcessesCustomerData] = useState(false);
-  const [customerDataDescription, setCustomerDataDescription] = useState("");
-  const [processesPersonalData, setProcessesPersonalData] = useState(false);
-  const [personalDataDescription, setPersonalDataDescription] = useState("");
-  const [processesSensitiveData, setProcessesSensitiveData] = useState(false);
-  const [sensitiveDataDescription, setSensitiveDataDescription] = useState("");
+  const [processesCustomerData, setProcessesCustomerData] = useState(false)
+  const [customerDataDescription, setCustomerDataDescription] = useState("")
+  const [processesPersonalData, setProcessesPersonalData] = useState(false)
+  const [personalDataDescription, setPersonalDataDescription] = useState("")
+  const [processesSensitiveData, setProcessesSensitiveData] = useState(false)
+  const [sensitiveDataDescription, setSensitiveDataDescription] = useState("")
 
   const getFormData = () => ({
     customerData: {
@@ -29,7 +29,7 @@ export default function DataProtectionPage() {
       processed: processesSensitiveData,
       description: sensitiveDataDescription,
     },
-  });
+  })
 
   return (
     <SectionForm
@@ -39,7 +39,7 @@ export default function DataProtectionPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Customer Data
           </h3>
@@ -76,7 +76,7 @@ export default function DataProtectionPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Personal Data
           </h3>
@@ -113,7 +113,7 @@ export default function DataProtectionPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Sensitive Data
           </h3>
@@ -149,6 +149,5 @@ export default function DataProtectionPage() {
         </CardContent>
       </Card>
     </SectionForm>
-  );
+  )
 }
-

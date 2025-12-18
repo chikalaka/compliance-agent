@@ -246,7 +246,7 @@ export default function TicketScreenshotsPage() {
               : "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30"
           }
         >
-          <CardContent className="pt-6">
+          <CardContent className="">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {isAuthenticated ? (
@@ -322,7 +322,7 @@ export default function TicketScreenshotsPage() {
       )}
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Configuration
           </h3>

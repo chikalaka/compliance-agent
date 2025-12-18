@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper } from "@/components/form-fields";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import { FieldWrapper } from "@/components/form-fields"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function CommunicationPage() {
-  const [customerCommunication, setCustomerCommunication] = useState("");
-  const [employeeCommunication, setEmployeeCommunication] = useState("");
+  const [customerCommunication, setCustomerCommunication] = useState("")
+  const [employeeCommunication, setEmployeeCommunication] = useState("")
 
   const getFormData = () => ({
     customerCommunication,
     employeeCommunication,
-  });
+  })
 
   return (
     <SectionForm
@@ -23,7 +23,7 @@ export default function CommunicationPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Customer Communication
           </h3>
@@ -50,7 +50,7 @@ export default function CommunicationPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Employee Communication
           </h3>
@@ -76,6 +76,5 @@ export default function CommunicationPage() {
         </CardContent>
       </Card>
     </SectionForm>
-  );
+  )
 }
-

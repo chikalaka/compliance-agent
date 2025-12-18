@@ -1,40 +1,40 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { SectionForm } from "@/components/section-form";
-import { FieldWrapper, CheckboxGroup } from "@/components/form-fields";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { useState } from "react"
+import { SectionForm } from "@/components/section-form"
+import { FieldWrapper, CheckboxGroup } from "@/components/form-fields"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X } from "lucide-react";
+} from "@/components/ui/select"
+import { Card, CardContent } from "@/components/ui/card"
+import { Plus, X } from "lucide-react"
 
 interface Office {
-  id: string;
-  city: string;
-  country: string;
-  ownership: string;
+  id: string
+  city: string
+  country: string
+  ownership: string
 }
 
 const OFFICE_TYPE_OPTIONS = [
   { value: "remote-only", label: "Remote-only" },
   { value: "hybrid", label: "Hybrid" },
   { value: "in-person", label: "Fully in-person" },
-];
+]
 
 const OWNERSHIP_OPTIONS = [
   { value: "owned", label: "Owned" },
   { value: "leased", label: "Leased" },
   { value: "coworking", label: "Coworking" },
-];
+]
 
 const ACCESS_METHOD_OPTIONS = [
   { id: "key", label: "Key" },
@@ -43,36 +43,34 @@ const ACCESS_METHOD_OPTIONS = [
   { id: "front-desk", label: "Front Desk" },
   { id: "security-guard", label: "Security Guard" },
   { id: "pin-code", label: "PIN Code" },
-];
+]
 
 export default function OfficesPage() {
-  const [officeType, setOfficeType] = useState("");
-  const [offices, setOffices] = useState<Office[]>([]);
-  const [accessMethods, setAccessMethods] = useState<string[]>([]);
-  const [visitorSignIn, setVisitorSignIn] = useState(false);
-  const [visitorEscort, setVisitorEscort] = useState(false);
-  const [serverRoomsPresent, setServerRoomsPresent] = useState(false);
+  const [officeType, setOfficeType] = useState("")
+  const [offices, setOffices] = useState<Office[]>([])
+  const [accessMethods, setAccessMethods] = useState<string[]>([])
+  const [visitorSignIn, setVisitorSignIn] = useState(false)
+  const [visitorEscort, setVisitorEscort] = useState(false)
+  const [serverRoomsPresent, setServerRoomsPresent] = useState(false)
 
   const addOffice = () => {
     setOffices([
       ...offices,
       { id: crypto.randomUUID(), city: "", country: "", ownership: "" },
-    ]);
-  };
+    ])
+  }
 
   const removeOffice = (id: string) => {
-    setOffices(offices.filter((o) => o.id !== id));
-  };
+    setOffices(offices.filter((o) => o.id !== id))
+  }
 
   const updateOffice = (
     id: string,
     field: keyof Omit<Office, "id">,
-    value: string
+    value: string,
   ) => {
-    setOffices(
-      offices.map((o) => (o.id === id ? { ...o, [field]: value } : o))
-    );
-  };
+    setOffices(offices.map((o) => (o.id === id ? { ...o, [field]: value } : o)))
+  }
 
   const getFormData = () => ({
     officeType,
@@ -89,7 +87,7 @@ export default function OfficesPage() {
       escortRequired: visitorEscort,
       serverRoomsPresent,
     },
-  });
+  })
 
   return (
     <SectionForm
@@ -99,7 +97,7 @@ export default function OfficesPage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Office Type
           </h3>
@@ -124,7 +122,7 @@ export default function OfficesPage() {
       {officeType && officeType !== "remote-only" && (
         <>
           <Card>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6">
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                 Office Locations
               </h3>
@@ -194,7 +192,7 @@ export default function OfficesPage() {
           </Card>
 
           <Card>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6">
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                 Physical Access Methods
               </h3>
@@ -213,7 +211,7 @@ export default function OfficesPage() {
           </Card>
 
           <Card>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6">
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                 Visitor Access Process
               </h3>
@@ -265,7 +263,7 @@ export default function OfficesPage() {
 
       {officeType === "remote-only" && (
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="">
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               As a remote-only organization, physical office security controls
               are not applicable. The focus should be on endpoint security,
@@ -275,6 +273,5 @@ export default function OfficesPage() {
         </Card>
       )}
     </SectionForm>
-  );
+  )
 }
-

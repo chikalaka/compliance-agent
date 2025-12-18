@@ -114,7 +114,7 @@ export default function InfrastructurePage() {
       getFormData={getFormData}
     >
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Physical Assets
           </h3>
@@ -135,7 +135,7 @@ export default function InfrastructurePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Device Management (MDM)
           </h3>
@@ -165,7 +165,7 @@ export default function InfrastructurePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Antivirus / EDR
           </h3>
@@ -195,7 +195,7 @@ export default function InfrastructurePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Identity Provider (IdP)
           </h3>
@@ -225,7 +225,7 @@ export default function InfrastructurePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Monitoring Tools
           </h3>
@@ -255,7 +255,7 @@ export default function InfrastructurePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Vulnerability Scanning
           </h3>
@@ -285,7 +285,7 @@ export default function InfrastructurePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Disaster Recovery
           </h3>
