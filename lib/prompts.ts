@@ -126,6 +126,20 @@ Create a markdown document titled "# Offices & Physical Security" with the follo
 
 Form data:
 ${dataJson}`,
+
+    "additional-context": `${BASE_INSTRUCTIONS}
+
+Create a markdown document titled "# Additional Context" that preserves the user's notes while organizing them into logical sections if possible.
+
+Guidelines for this section:
+- Preserve the user's original wording as much as possible
+- If the content covers multiple topics, organize with appropriate subheadings
+- Keep all information provided - do not summarize or remove details
+- Use bullet points for lists where appropriate
+- If the content is already well-structured, preserve that structure
+
+Form data:
+${dataJson}`,
   }
 
   return (
@@ -168,6 +182,9 @@ Sections: Customer Communication, Employee Communication`,
 
     offices: `Document: "# Offices & Physical Security"
 Sections: Office Type, Office Locations, Physical Access Methods, Visitor Access Process`,
+
+    "additional-context": `Document: "# Additional Context"
+Sections: Free-form notes organized by topic. Preserve user's original wording.`,
   }
 
   const sectionDesc = sectionDescriptions[sectionId] || "A compliance document"

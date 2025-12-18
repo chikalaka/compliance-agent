@@ -48,30 +48,51 @@ export async function POST(request: NextRequest) {
       const templateContent = await fs.readFile(TEMPLATE_FILE, "utf-8")
       const templateData: TodosData = JSON.parse(templateContent)
 
-      // Generate new IDs for imported todos to avoid conflicts
-      const importedTodos = templateData.todos.map((todo) => ({
+      const currentData = await readCustomTodos()
+
+      // Extract base IDs from existing custom todos (the part before the timestamp)
+      const existingBaseIds = new Set(
+        currentData.todos.map((todo) => {
+          // For template-derived IDs like "sec-policies-1234567890", extract "sec-policies"
+          // For custom IDs like "custom-1234567890", the base would be "custom"
+          const parts = todo.id.split("-")
+          // Remove the last part (timestamp) if it's a number
+          if (parts.length > 1 && /^\d+$/.test(parts[parts.length - 1])) {
+            return parts.slice(0, -1).join("-")
+          }
+          return todo.id
+        }),
+      )
+
+      // Filter out template todos that already exist
+      const newTemplateTodos = templateData.todos.filter(
+        (todo) => !existingBaseIds.has(todo.id),
+      )
+
+      // Generate new IDs for imported todos
+      const importedTodos = newTemplateTodos.map((todo) => ({
         ...todo,
         id: `${todo.id}-${Date.now()}`,
       }))
 
-      const currentData = await readCustomTodos()
       currentData.todos.push(...importedTodos)
       await writeCustomTodos(currentData)
 
       return NextResponse.json({
         success: true,
-        message: "Imported todos from template",
+        message:
+          importedTodos.length > 0
+            ? `Imported ${importedTodos.length} new todos from template`
+            : "All template todos already exist",
         todos: currentData.todos,
+        importedCount: importedTodos.length,
       })
     }
 
     // Add new todo
     const { title, description } = body
     if (!title) {
-      return NextResponse.json(
-        { error: "Title is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Title is required" }, { status: 400 })
     }
 
     const newTodo: Todo = {
@@ -92,7 +113,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating custom todo:", error)
     return NextResponse.json(
       { error: "Failed to create todo" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -115,7 +136,8 @@ export async function PUT(request: NextRequest) {
     }
 
     if (title !== undefined) data.todos[todoIndex].title = title
-    if (description !== undefined) data.todos[todoIndex].description = description
+    if (description !== undefined)
+      data.todos[todoIndex].description = description
 
     await writeCustomTodos(data)
 
@@ -127,7 +149,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating custom todo:", error)
     return NextResponse.json(
       { error: "Failed to update todo" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -157,8 +179,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Error deleting custom todo:", error)
     return NextResponse.json(
       { error: "Failed to delete todo" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
-

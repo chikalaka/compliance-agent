@@ -70,16 +70,19 @@ export default function TemplateTodosPage() {
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
         <p className="text-sm text-amber-700 dark:text-amber-300">
           These are read-only template tasks. Go to{" "}
-          <span className="font-medium">Custom Todos</span> to import and customize them.
+          <span className="font-medium">Custom Todos</span> to import and
+          customize them.
         </p>
       </div>
 
       {todos.length === 0 ? (
         <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-          <p className="text-zinc-500 dark:text-zinc-400">No template tasks available.</p>
+          <p className="text-zinc-500 dark:text-zinc-400">
+            No template tasks available.
+          </p>
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="flex flex-col gap-3">
           {todos.map((todo, index) => (
             <Card
               key={todo.id}
@@ -116,4 +119,3 @@ export default function TemplateTodosPage() {
     </div>
   )
 }
-

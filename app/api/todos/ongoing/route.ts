@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
       // Convert to ongoing todos with default status
       const ongoingTodos: OngoingTodo[] = customData.todos.map((todo) => ({
-        id: `ongoing-${todo.id}-${Date.now()}`,
+        id: todo.id,
         title: todo.title,
         description: todo.description,
         status: "todo" as TodoStatus,
@@ -80,15 +80,12 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json(
-      { error: "Invalid action" },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
   } catch (error) {
     console.error("Error in ongoing todos POST:", error)
     return NextResponse.json(
       { error: "Failed to process request" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -113,10 +110,7 @@ export async function PUT(request: NextRequest) {
     // Update status
     if (status !== undefined) {
       if (!["todo", "wip", "done"].includes(status)) {
-        return NextResponse.json(
-          { error: "Invalid status" },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: "Invalid status" }, { status: 400 })
       }
       data.todos[todoIndex].status = status
     }
@@ -146,8 +140,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating ongoing todo:", error)
     return NextResponse.json(
       { error: "Failed to update todo" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
-

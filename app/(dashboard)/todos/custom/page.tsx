@@ -22,6 +22,7 @@ export default function CustomTodosPage() {
   const [loading, setLoading] = useState(true)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [viewModalOpen, setViewModalOpen] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null)
@@ -97,6 +98,11 @@ export default function CustomTodosPage() {
     } finally {
       setIsAdding(false)
     }
+  }
+
+  const handleCardClick = (todo: Todo) => {
+    setSelectedTodo(todo)
+    setViewModalOpen(true)
   }
 
   const handleEditClick = (todo: Todo, e: React.MouseEvent) => {
@@ -231,18 +237,19 @@ export default function CustomTodosPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3">
-          {todos.map((todo, index) => (
+        <div className="flex flex-col gap-3">
+          {todos.map((todo) => (
             <Card
               key={todo.id}
-              className="transition-all hover:border-amber-300 hover:shadow-sm dark:hover:border-amber-700"
+              onClick={() => handleCardClick(todo)}
+              className="cursor-pointer transition-all hover:border-amber-300 hover:shadow-sm dark:hover:border-amber-700"
             >
               <CardContent className="flex items-center gap-4 py-4">
                 <Badge
                   variant="outline"
-                  className="h-7 w-7 shrink-0 items-center justify-center rounded-full border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                  className="shrink-0 rounded-lg border-amber-300 px-2 py-1 text-xs font-mono text-amber-600 dark:border-amber-700 dark:text-amber-400"
                 >
-                  {index + 1}
+                  {todo.id}
                 </Badge>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
@@ -282,6 +289,13 @@ export default function CustomTodosPage() {
         onOpenChange={setModalOpen}
         mode="edit"
         onSave={handleSaveTodo}
+      />
+
+      <TodoDetailModal
+        todo={selectedTodo}
+        open={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+        mode="view"
       />
 
       <ConfirmDialog

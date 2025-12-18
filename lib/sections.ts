@@ -63,6 +63,13 @@ export const sections: Section[] = [
     fileName: "offices.md",
     icon: "MapPin",
   },
+  {
+    id: "additional-context",
+    title: "Additional Context",
+    description: "Any other SOC 2 relevant information not covered elsewhere",
+    fileName: "additional-context.md",
+    icon: "NotebookPen",
+  },
 ]
 
 export function getSectionById(id: string): Section | undefined {

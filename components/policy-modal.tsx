@@ -87,6 +87,7 @@ export function PolicyModal({
         body: JSON.stringify({
           policyId: policy.id,
           userAnswers,
+          questions,
           policyName: policy.id === "custom" ? policy.name : undefined,
           fileName: policy.id === "custom" ? policy.fileName : undefined,
         }),

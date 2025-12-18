@@ -21,6 +21,7 @@ import {
   ClipboardList,
   ListTodo,
   ListChecks,
+  NotebookPen,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { sections } from "@/lib/sections"
@@ -41,6 +42,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ClipboardList,
   ListTodo,
   ListChecks,
+  NotebookPen,
 }
 
 interface SectionStatus {

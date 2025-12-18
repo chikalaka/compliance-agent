@@ -4,12 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  RefreshCw,
-  Loader2,
-  ListChecks,
-  StickyNote,
-} from "lucide-react"
+import { RefreshCw, Loader2, ListChecks, StickyNote } from "lucide-react"
 import { toast } from "sonner"
 import { TodoDetailModal } from "@/components/todo-detail-modal"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -177,7 +172,8 @@ export default function OngoingTodosPage() {
         <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
           <ListChecks className="mx-auto h-12 w-12 text-zinc-300 dark:text-zinc-600" />
           <p className="mt-4 text-zinc-500 dark:text-zinc-400">
-            No ongoing tasks. Click &quot;Start Over&quot; to import from your custom todos.
+            No ongoing tasks. Click &quot;Start Over&quot; to import from your
+            custom todos.
           </p>
         </div>
       ) : (
@@ -211,7 +207,7 @@ export default function OngoingTodosPage() {
           </div>
 
           {/* Todo List */}
-          <div className="grid gap-3">
+          <div className="flex flex-col gap-3">
             {todos.map((todo) => (
               <Card
                 key={todo.id}
@@ -219,8 +215,11 @@ export default function OngoingTodosPage() {
                 onClick={() => handleTodoClick(todo)}
               >
                 <CardContent className="flex items-center gap-4 py-4">
-                  <Badge className={`shrink-0 ${statusColors[todo.status]}`}>
-                    {statusLabels[todo.status]}
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 rounded-lg border-amber-300 px-2 py-1 text-xs font-mono text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                  >
+                    {todo.id}
                   </Badge>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
@@ -236,6 +235,9 @@ export default function OngoingTodosPage() {
                       <span className="text-xs">{todo.notes.length}</span>
                     </div>
                   )}
+                  <Badge className={`shrink-0 ${statusColors[todo.status]}`}>
+                    {statusLabels[todo.status]}
+                  </Badge>
                 </CardContent>
               </Card>
             ))}
@@ -264,4 +266,3 @@ export default function OngoingTodosPage() {
     </div>
   )
 }
-

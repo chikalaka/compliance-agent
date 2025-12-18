@@ -68,3 +68,43 @@ Then include appropriate sections based on the policy type. Common sections incl
 
 Output the complete policy in markdown format. Keep it concise but compliant.`
 }
+
+export function getMergeQAIntoContextPrompt(
+  policyName: string,
+  existingContent: string,
+  questions: string,
+  userAnswers: string,
+): string {
+  return `You are merging new information into an "Additional Context" document for SOC2 compliance.
+
+The user just answered questions while generating the "${policyName}" policy. These answers contain valuable company context that should be preserved for future policy generation.
+
+EXISTING ADDITIONAL CONTEXT DOCUMENT:
+---
+${existingContent || "(Empty - no existing content)"}
+---
+
+QUESTIONS THAT WERE ASKED:
+---
+${questions}
+---
+
+USER'S ANSWERS:
+---
+${userAnswers}
+---
+
+Your task:
+1. Extract any useful company context from the new answers
+2. Merge it intelligently with the existing content
+3. Avoid duplicating information that's already present
+4. Organize content logically with appropriate subheadings if helpful
+5. Preserve the original wording from both sources as much as possible
+6. Add a note about which policy this context came from if relevant
+
+Output the complete merged "Additional Context" document in markdown format, starting with:
+
+# Additional Context
+
+If the new answers don't contain any new useful context (e.g., they're just "N/A" or already covered), return the existing content unchanged.`
+}
