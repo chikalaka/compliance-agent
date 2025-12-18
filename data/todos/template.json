@@ -1,0 +1,55 @@
+{
+  "todos": [
+    {
+      "id": "sec-policies",
+      "title": "Document Security Policies",
+      "description": "Create and document all security policies including access control, data protection, incident response, and acceptable use policies."
+    },
+    {
+      "id": "risk-assessment",
+      "title": "Conduct Risk Assessment",
+      "description": "Perform a comprehensive risk assessment to identify potential threats, vulnerabilities, and their potential impact on the organization."
+    },
+    {
+      "id": "access-controls",
+      "title": "Implement Access Controls",
+      "description": "Set up role-based access controls (RBAC), ensure least privilege principle is followed, and document all access rights."
+    },
+    {
+      "id": "vendor-review",
+      "title": "Review Vendor Security",
+      "description": "Assess all third-party vendors for security compliance, request SOC2 reports, and document vendor risk assessments."
+    },
+    {
+      "id": "employee-training",
+      "title": "Security Awareness Training",
+      "description": "Conduct security awareness training for all employees covering phishing, password hygiene, and data handling procedures."
+    },
+    {
+      "id": "incident-response",
+      "title": "Establish Incident Response Plan",
+      "description": "Create and document an incident response plan including roles, communication procedures, and recovery steps."
+    },
+    {
+      "id": "data-encryption",
+      "title": "Implement Data Encryption",
+      "description": "Ensure all sensitive data is encrypted at rest and in transit. Document encryption methods and key management procedures."
+    },
+    {
+      "id": "backup-recovery",
+      "title": "Setup Backup & Recovery",
+      "description": "Implement backup procedures, test recovery processes, and document RPO/RTO objectives."
+    },
+    {
+      "id": "logging-monitoring",
+      "title": "Configure Logging & Monitoring",
+      "description": "Set up centralized logging, security monitoring, and alerting for suspicious activities."
+    },
+    {
+      "id": "change-management",
+      "title": "Establish Change Management",
+      "description": "Document change management procedures including approval workflows, testing requirements, and rollback plans."
+    }
+  ]
+}
+
