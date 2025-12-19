@@ -6,7 +6,7 @@ import { join } from "path"
 import { getPolicyById } from "@/lib/policies"
 import { POLICY_SYSTEM_PROMPT, getQuestionsPrompt } from "@/lib/policy-prompts"
 
-const COMPLIANCE_DATA_DIR = join(process.cwd(), "compliance-data")
+const COMPLIANCE_DATA_DIR = join(process.cwd(), "user-data", "compliance-data")
 
 async function readAllComplianceData(): Promise<string> {
   try {

@@ -3,7 +3,7 @@ import { access } from "fs/promises"
 import { join } from "path"
 import { policies } from "@/lib/policies"
 
-const POLICIES_DIR = join(process.cwd(), "policies")
+const POLICIES_DIR = join(process.cwd(), "user-data", "policies")
 
 export async function GET() {
   const statuses: Record<string, boolean> = {}

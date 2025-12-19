@@ -4,7 +4,11 @@ import path from "path"
 import { generateSectionMarkdown, mergeSectionMarkdown } from "@/lib/ai"
 import { getSectionById } from "@/lib/sections"
 
-const COMPLIANCE_DATA_DIR = path.join(process.cwd(), "compliance-data")
+const COMPLIANCE_DATA_DIR = path.join(
+  process.cwd(),
+  "user-data",
+  "compliance-data",
+)
 
 export async function GET(
   request: NextRequest,

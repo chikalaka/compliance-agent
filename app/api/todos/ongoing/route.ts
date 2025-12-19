@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
 
-const ONGOING_FILE = path.join(process.cwd(), "data/todos/ongoing-todos.json")
-const CUSTOM_FILE = path.join(process.cwd(), "data/todos/custom-todos.json")
+const ONGOING_FILE = path.join(
+  process.cwd(),
+  "user-data",
+  "todos",
+  "ongoing-todos.json",
+)
+const CUSTOM_FILE = path.join(
+  process.cwd(),
+  "user-data",
+  "todos",
+  "custom-todos.json",
+)
 
 type TodoStatus = "todo" | "wip" | "done"
 
@@ -39,6 +49,8 @@ async function readOngoingTodos(): Promise<OngoingTodosData> {
 }
 
 async function writeOngoingTodos(data: OngoingTodosData): Promise<void> {
+  // Ensure directory exists
+  await fs.mkdir(path.dirname(ONGOING_FILE), { recursive: true })
   await fs.writeFile(ONGOING_FILE, JSON.stringify(data, null, 2), "utf-8")
 }
 

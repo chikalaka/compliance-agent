@@ -10,8 +10,8 @@ import {
   getMergeQAIntoContextPrompt,
 } from "@/lib/policy-prompts"
 
-const COMPLIANCE_DATA_DIR = join(process.cwd(), "compliance-data")
-const POLICIES_DIR = join(process.cwd(), "policies")
+const COMPLIANCE_DATA_DIR = join(process.cwd(), "user-data", "compliance-data")
+const POLICIES_DIR = join(process.cwd(), "user-data", "policies")
 const ADDITIONAL_CONTEXT_FILE = join(
   COMPLIANCE_DATA_DIR,
   "additional-context.md",

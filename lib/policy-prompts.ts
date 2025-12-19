@@ -17,7 +17,7 @@ Here is the company's compliance data that has been collected:
 ${complianceData}
 ---
 
-Based on this data, generate a TL;DR of what this policy is for, then ask the essential questions needed to complete this policy. Only ask about information that:
+Based on this data, generate a TL;DR of what this policy is for, then ask only on the essential questions needed to complete this policy. Only ask about information that:
 1. Is NOT already available in the compliance data above
 2. Is REQUIRED for the minimum SOC2 compliance
 
@@ -29,7 +29,9 @@ Questions:
 2. [Question 2]
 ...
 
-Keep questions concise and focused on what's absolutely necessary.`
+Keep questions concise and focused on what's absolutely necessary.
+
+Ask only the minimum questions necessary to complete the policy.`
 }
 
 export function getGeneratePolicyPrompt(

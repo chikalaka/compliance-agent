@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
 
-const TEMPLATE_FILE = path.join(process.cwd(), "data/todos/template.json")
+const TEMPLATE_FILE = path.join(process.cwd(), "data", "todos", "template.json")
 
 export async function GET() {
   try {
@@ -14,4 +14,3 @@ export async function GET() {
     return NextResponse.json({ todos: [] })
   }
 }
-

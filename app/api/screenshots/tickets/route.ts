@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       results,
-      outputDir: `screenshots/tickets/${repoName.replace("/", "-")}`,
+      outputDir: `user-data/screenshots/tickets/${repoName.replace("/", "-")}`,
     })
   } catch (error) {
     console.error("Screenshot API error:", error)

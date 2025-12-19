@@ -86,6 +86,7 @@ export async function takeTicketScreenshots(
   const repoSlug = repoName.replace("/", "-")
   const baseScreenshotDir = path.join(
     process.cwd(),
+    "user-data",
     "screenshots",
     "tickets",
     repoSlug,

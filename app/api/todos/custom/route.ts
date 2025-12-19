@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
 
-const CUSTOM_FILE = path.join(process.cwd(), "data/todos/custom-todos.json")
-const TEMPLATE_FILE = path.join(process.cwd(), "data/todos/template.json")
+const CUSTOM_FILE = path.join(
+  process.cwd(),
+  "user-data",
+  "todos",
+  "custom-todos.json",
+)
+const TEMPLATE_FILE = path.join(process.cwd(), "data", "todos", "template.json")
 
 interface Todo {
   id: string
@@ -25,6 +30,8 @@ async function readCustomTodos(): Promise<TodosData> {
 }
 
 async function writeCustomTodos(data: TodosData): Promise<void> {
+  // Ensure directory exists
+  await fs.mkdir(path.dirname(CUSTOM_FILE), { recursive: true })
   await fs.writeFile(CUSTOM_FILE, JSON.stringify(data, null, 2), "utf-8")
 }
 
