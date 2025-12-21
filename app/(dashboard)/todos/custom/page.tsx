@@ -176,7 +176,7 @@ export default function CustomTodosPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Custom Todos
+              Task List
             </h1>
             <p className="text-zinc-500 dark:text-zinc-400">
               Your customized task list. Add, edit, or delete tasks.
@@ -190,7 +190,7 @@ export default function CustomTodosPage() {
           className="shrink-0 gap-2"
         >
           <Download className="h-4 w-4" />
-          Import from Template
+          Import from Default
         </Button>
       </div>
 

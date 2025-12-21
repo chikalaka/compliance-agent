@@ -81,21 +81,15 @@ interface TodoItem {
 
 const todoItems: TodoItem[] = [
   {
-    id: "template",
-    title: "Template",
-    icon: "ClipboardList",
-    href: "/todos/template",
-  },
-  {
     id: "custom",
-    title: "Custom Todos",
-    icon: "ListTodo",
+    title: "Task List",
+    icon: "ClipboardList",
     href: "/todos/custom",
   },
   {
     id: "ongoing",
     title: "Ongoing Todos",
-    icon: "ListChecks",
+    icon: "ListTodo",
     href: "/todos/ongoing",
   },
 ]
