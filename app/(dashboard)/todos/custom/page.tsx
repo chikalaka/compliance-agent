@@ -27,6 +27,9 @@ interface Todo {
   actions?: TodoAction[]
 }
 
+// Helper to check if a task is user-created (editable) vs template-derived
+const isCustomTask = (id: string) => id.startsWith("custom-")
+
 export default function CustomTodosPage() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
@@ -200,7 +203,7 @@ export default function CustomTodosPage() {
           className="shrink-0 gap-2"
         >
           <Download className="h-4 w-4" />
-          Import from Default
+          Import Default Tasks
         </Button>
       </div>
 
@@ -270,14 +273,16 @@ export default function CustomTodosPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => handleEditClick(todo, e)}
-                    className="h-8 w-8 text-zinc-400 hover:text-amber-600"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  {isCustomTask(todo.id) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => handleEditClick(todo, e)}
+                      className="h-8 w-8 text-zinc-400 hover:text-amber-600"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -312,7 +317,7 @@ export default function CustomTodosPage() {
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
         title="Import from Template"
-        description="This will add all template tasks to your custom todos list. Existing tasks will be kept."
+        description="This will replace all default tasks with the latest template version. Your custom tasks will be preserved."
         confirmLabel="Import"
         onConfirm={handleImportFromTemplate}
       />

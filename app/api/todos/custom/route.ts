@@ -67,40 +67,25 @@ export async function POST(request: NextRequest) {
 
       const currentData = await readCustomTodos()
 
-      // Extract base IDs from existing custom todos (the part before the timestamp)
-      const existingBaseIds = new Set(
-        currentData.todos.map((todo) => {
-          // For template-derived IDs like "sec-policies-1234567890", extract "sec-policies"
-          // For custom IDs like "custom-1234567890", the base would be "custom"
-          const parts = todo.id.split("-")
-          // Remove the last part (timestamp) if it's a number
-          if (parts.length > 1 && /^\d+$/.test(parts[parts.length - 1])) {
-            return parts.slice(0, -1).join("-")
-          }
-          return todo.id
-        }),
+      // Keep only custom tasks (user-created), remove all template-derived tasks
+      const customTodos = currentData.todos.filter((todo) =>
+        todo.id.startsWith("custom-"),
       )
 
-      // Filter out template todos that already exist
-      const newTemplateTodos = templateData.todos.filter(
-        (todo) => !existingBaseIds.has(todo.id),
-      )
-
-      // Generate new IDs for imported todos
-      const importedTodos = newTemplateTodos.map((todo) => ({
+      // Import all template todos with fresh IDs (overrides any existing template tasks)
+      const timestamp = Date.now()
+      const importedTodos = templateData.todos.map((todo) => ({
         ...todo,
-        id: `${todo.id}-${Date.now()}`,
+        id: `${todo.id}-${timestamp}`,
       }))
 
-      currentData.todos.push(...importedTodos)
+      // Combine: custom tasks first, then imported template tasks
+      currentData.todos = [...customTodos, ...importedTodos]
       await writeCustomTodos(currentData)
 
       return NextResponse.json({
         success: true,
-        message:
-          importedTodos.length > 0
-            ? `Imported ${importedTodos.length} new todos from template`
-            : "All template todos already exist",
+        message: `Imported ${importedTodos.length} tasks from template`,
         todos: currentData.todos,
         importedCount: importedTodos.length,
       })
