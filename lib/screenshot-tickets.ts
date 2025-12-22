@@ -62,6 +62,31 @@ function extractTicketId(
 }
 
 /**
+ * Injects a timestamp overlay at the bottom right of the page before taking a screenshot.
+ */
+async function injectTimestampOverlay(page: Page): Promise<void> {
+  const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19)
+  await page.evaluate((ts) => {
+    const overlay = document.createElement("div")
+    overlay.id = "screenshot-timestamp"
+    overlay.textContent = ts
+    overlay.style.cssText = `
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 6px 12px;
+      font-family: monospace;
+      font-size: 12px;
+      border-radius: 4px;
+      z-index: 999999;
+    `
+    document.body.appendChild(overlay)
+  }, timestamp)
+}
+
+/**
  * Main function to take screenshots of GitHub PRs and their linked Linear tickets.
  * Uses the saved browser session for authentication.
  */
@@ -216,6 +241,9 @@ export async function takeTicketScreenshots(
         )
         await page.waitForTimeout(1000) // Wait for any lazy-loaded content
 
+        // Inject timestamp overlay before taking screenshot
+        await injectTimestampOverlay(page)
+
         // Take GitHub screenshot
         const githubScreenshotPath = path.join(ticketDir, "github-ss.png")
         await page.screenshot({ path: githubScreenshotPath, fullPage: false })
@@ -235,6 +263,9 @@ export async function takeTicketScreenshots(
 
         // Wait for Linear page to fully load
         await page.waitForTimeout(2000)
+
+        // Inject timestamp overlay before taking screenshot
+        await injectTimestampOverlay(page)
 
         // Take Linear screenshot
         const linearScreenshotPath = path.join(ticketDir, "linear-ss.png")
