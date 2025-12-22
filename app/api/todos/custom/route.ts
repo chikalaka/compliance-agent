@@ -72,12 +72,8 @@ export async function POST(request: NextRequest) {
         todo.id.startsWith("custom-"),
       )
 
-      // Import all template todos with fresh IDs (overrides any existing template tasks)
-      const timestamp = Date.now()
-      const importedTodos = templateData.todos.map((todo) => ({
-        ...todo,
-        id: `${todo.id}-${timestamp}`,
-      }))
+      // Import all template todos with their original IDs
+      const importedTodos = templateData.todos
 
       // Combine: custom tasks first, then imported template tasks
       currentData.todos = [...customTodos, ...importedTodos]
