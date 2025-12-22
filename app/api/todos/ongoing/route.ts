@@ -17,12 +17,22 @@ const CUSTOM_FILE = path.join(
 
 type TodoStatus = "todo" | "wip" | "done"
 
+interface TodoAction {
+  label: string
+  type: "url" | "route" | "generate"
+  url?: string
+  route?: string
+  template?: string
+  fileName?: string
+}
+
 interface OngoingTodo {
   id: string
   title: string
   description: string
   status: TodoStatus
   notes: string[]
+  actions?: TodoAction[]
 }
 
 interface OngoingTodosData {
@@ -33,6 +43,7 @@ interface CustomTodo {
   id: string
   title: string
   description: string
+  actions?: TodoAction[]
 }
 
 interface CustomTodosData {
@@ -81,6 +92,7 @@ export async function POST(request: NextRequest) {
         description: todo.description,
         status: "todo" as TodoStatus,
         notes: [],
+        actions: todo.actions,
       }))
 
       await writeOngoingTodos({ todos: ongoingTodos })

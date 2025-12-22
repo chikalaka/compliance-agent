@@ -11,12 +11,22 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 
 type TodoStatus = "todo" | "wip" | "done"
 
+interface TodoAction {
+  label: string
+  type: "url" | "route" | "generate"
+  url?: string
+  route?: string
+  template?: string
+  fileName?: string
+}
+
 interface OngoingTodo {
   id: string
   title: string
   description: string
   status: TodoStatus
   notes: string[]
+  actions?: TodoAction[]
 }
 
 const statusColors: Record<TodoStatus, string> = {

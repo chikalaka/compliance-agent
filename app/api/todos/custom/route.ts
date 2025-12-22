@@ -10,10 +10,20 @@ const CUSTOM_FILE = path.join(
 )
 const TEMPLATE_FILE = path.join(process.cwd(), "data", "todos", "template.json")
 
+interface TodoAction {
+  label: string
+  type: "url" | "route" | "generate"
+  url?: string
+  route?: string
+  template?: string
+  fileName?: string
+}
+
 interface Todo {
   id: string
   title: string
   description: string
+  actions?: TodoAction[]
 }
 
 interface TodosData {

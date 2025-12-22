@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import {
   Dialog,
   DialogContent,
@@ -21,14 +22,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Plus, FileText, StickyNote } from "lucide-react"
+import {
+  Trash2,
+  Plus,
+  FileText,
+  StickyNote,
+  ExternalLink,
+  ArrowRight,
+  Sparkles,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react"
+import { toast } from "sonner"
 
 type TodoStatus = "todo" | "wip" | "done"
+
+interface TodoAction {
+  label: string
+  type: "url" | "route" | "generate"
+  url?: string
+  route?: string
+  template?: string
+  fileName?: string
+}
 
 interface BaseTodo {
   id: string
   title: string
   description: string
+  actions?: TodoAction[]
 }
 
 interface OngoingTodo extends BaseTodo {
@@ -71,10 +93,15 @@ export function TodoDetailModal({
   onNotesChange,
   className,
 }: TodoDetailModalProps) {
+  const router = useRouter()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [notes, setNotes] = useState<string[]>([])
   const [newNote, setNewNote] = useState("")
+  const [generatingAction, setGeneratingAction] = useState<string | null>(null)
+  const [generatedActions, setGeneratedActions] = useState<Set<string>>(
+    new Set(),
+  )
 
   const ongoingTodo = todo as OngoingTodo | null
 
@@ -93,6 +120,7 @@ export function TodoDetailModal({
       setNotes([])
     }
     setNewNote("")
+    setGeneratedActions(new Set())
   }, [todo, open])
 
   const handleSave = () => {
@@ -126,18 +154,87 @@ export function TodoDetailModal({
     }
   }
 
+  const handleActionClick = async (action: TodoAction) => {
+    switch (action.type) {
+      case "url":
+        if (action.url) {
+          window.open(action.url, "_blank", "noopener,noreferrer")
+        }
+        break
+      case "route":
+        if (action.route) {
+          onOpenChange(false)
+          router.push(action.route)
+        }
+        break
+      case "generate":
+        if (action.template && action.fileName) {
+          setGeneratingAction(action.label)
+          try {
+            const res = await fetch("/api/todos/generate-doc", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                template: action.template,
+                fileName: action.fileName,
+              }),
+            })
+
+            if (res.ok) {
+              const data = await res.json()
+              setGeneratedActions((prev) => new Set(prev).add(action.label))
+              toast.success(`Document generated: ${data.fileName}`)
+            } else {
+              const error = await res.json()
+              toast.error(error.message || "Failed to generate document")
+            }
+          } catch (error) {
+            console.error("Failed to generate document:", error)
+            toast.error("Failed to generate document")
+          } finally {
+            setGeneratingAction(null)
+          }
+        }
+        break
+    }
+  }
+
+  const getActionIcon = (action: TodoAction) => {
+    if (generatingAction === action.label) {
+      return <Loader2 className="h-4 w-4 animate-spin" />
+    }
+    if (generatedActions.has(action.label)) {
+      return <CheckCircle2 className="h-4 w-4" />
+    }
+    switch (action.type) {
+      case "url":
+        return <ExternalLink className="h-4 w-4" />
+      case "route":
+        return <ArrowRight className="h-4 w-4" />
+      case "generate":
+        return <Sparkles className="h-4 w-4" />
+    }
+  }
+
+  const hasActions = todo?.actions && todo.actions.length > 0
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`max-w-lg ${className || ""}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-amber-500" />
-            {mode === "view" ? "Task Details" : mode === "edit" ? "Edit Task" : "Task Progress"}
+            {mode === "view"
+              ? "Task Details"
+              : mode === "edit"
+              ? "Edit Task"
+              : "Task Progress"}
           </DialogTitle>
           <DialogDescription>
             {mode === "view" && "View the details of this task."}
             {mode === "edit" && "Edit the title and description of this task."}
-            {mode === "ongoing" && "Update the status and add notes for this task."}
+            {mode === "ongoing" &&
+              "Update the status and add notes for this task."}
           </DialogDescription>
         </DialogHeader>
 
@@ -189,6 +286,34 @@ export function TodoDetailModal({
             </div>
           )}
 
+          {/* Actions (for view and ongoing modes) */}
+          {mode !== "edit" && hasActions && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                Actions
+              </p>
+              <div className="flex flex-col gap-2">
+                {todo?.actions?.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="justify-start gap-2 h-auto py-2.5 px-3 text-left"
+                    onClick={() => handleActionClick(action)}
+                    disabled={generatingAction === action.label}
+                  >
+                    {getActionIcon(action)}
+                    <span className="flex-1">{action.label}</span>
+                    {generatedActions.has(action.label) && (
+                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs">
+                        Generated
+                      </Badge>
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Status (only for ongoing mode) */}
           {mode === "ongoing" && ongoingTodo && (
             <div className="space-y-2">
@@ -197,7 +322,9 @@ export function TodoDetailModal({
               </label>
               <Select
                 value={ongoingTodo.status}
-                onValueChange={(value) => handleStatusChange(value as TodoStatus)}
+                onValueChange={(value) =>
+                  handleStatusChange(value as TodoStatus)
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue>
@@ -208,13 +335,19 @@ export function TodoDetailModal({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todo">
-                    <Badge className={statusColors.todo}>{statusLabels.todo}</Badge>
+                    <Badge className={statusColors.todo}>
+                      {statusLabels.todo}
+                    </Badge>
                   </SelectItem>
                   <SelectItem value="wip">
-                    <Badge className={statusColors.wip}>{statusLabels.wip}</Badge>
+                    <Badge className={statusColors.wip}>
+                      {statusLabels.wip}
+                    </Badge>
                   </SelectItem>
                   <SelectItem value="done">
-                    <Badge className={statusColors.done}>{statusLabels.done}</Badge>
+                    <Badge className={statusColors.done}>
+                      {statusLabels.done}
+                    </Badge>
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -230,7 +363,7 @@ export function TodoDetailModal({
                   Notes
                 </label>
               </div>
-              
+
               {notes.length > 0 && (
                 <ScrollArea className="h-[120px] rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
                   <div className="space-y-2">
@@ -305,4 +438,3 @@ export function TodoDetailModal({
     </Dialog>
   )
 }
-

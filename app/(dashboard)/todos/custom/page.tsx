@@ -11,10 +11,20 @@ import { toast } from "sonner"
 import { TodoDetailModal } from "@/components/todo-detail-modal"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 
+interface TodoAction {
+  label: string
+  type: "url" | "route" | "generate"
+  url?: string
+  route?: string
+  template?: string
+  fileName?: string
+}
+
 interface Todo {
   id: string
   title: string
   description: string
+  actions?: TodoAction[]
 }
 
 export default function CustomTodosPage() {
