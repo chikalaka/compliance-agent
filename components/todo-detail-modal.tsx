@@ -32,6 +32,9 @@ import {
   Sparkles,
   Loader2,
   CheckCircle2,
+  Camera,
+  Calendar,
+  Search,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -39,11 +42,14 @@ type TodoStatus = "todo" | "wip" | "done"
 
 interface TodoAction {
   label: string
-  type: "url" | "route" | "generate"
+  type: "url" | "route" | "generate" | "capture"
   url?: string
   route?: string
   template?: string
   fileName?: string
+  // Calendar capture fields
+  calendarSearch?: string
+  fileNamePrefix?: string
 }
 
 interface BaseTodo {
@@ -196,6 +202,67 @@ export function TodoDetailModal({
           }
         }
         break
+      case "capture":
+        setGeneratingAction(action.label)
+        try {
+          // Check if this is a calendar search capture or regular URL capture
+          const isCalendarCapture =
+            action.calendarSearch && action.fileNamePrefix
+          const isUrlCapture = action.url && action.fileName
+
+          if (!isCalendarCapture && !isUrlCapture) {
+            toast.error("Invalid capture action configuration")
+            break
+          }
+
+          const requestBody = isCalendarCapture
+            ? {
+                calendarSearch: action.calendarSearch,
+                fileNamePrefix: action.fileNamePrefix,
+                maxCount: 4,
+              }
+            : {
+                url: action.url,
+                fileName: action.fileName,
+              }
+
+          const res = await fetch("/api/screenshots/capture", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+          })
+
+          if (res.ok) {
+            const data = await res.json()
+            setGeneratedActions((prev) => new Set(prev).add(action.label))
+
+            if (isCalendarCapture) {
+              const count = data.screenshots?.length || 0
+              toast.success(
+                `Captured ${count} calendar event${count !== 1 ? "s" : ""}: ${
+                  action.calendarSearch
+                }`,
+              )
+            } else {
+              toast.success(`Screenshot captured: ${data.fileName}`)
+            }
+          } else {
+            const error = await res.json()
+            if (res.status === 404 && isCalendarCapture) {
+              toast.error(
+                `No events found with title "${action.calendarSearch}"`,
+              )
+            } else {
+              toast.error(error.message || "Failed to capture screenshot")
+            }
+          }
+        } catch (error) {
+          console.error("Failed to capture screenshot:", error)
+          toast.error("Failed to capture screenshot")
+        } finally {
+          setGeneratingAction(null)
+        }
+        break
     }
   }
 
@@ -213,6 +280,8 @@ export function TodoDetailModal({
         return <ArrowRight className="h-4 w-4" />
       case "generate":
         return <Sparkles className="h-4 w-4" />
+      case "capture":
+        return <Camera className="h-4 w-4" />
     }
   }
 
@@ -293,23 +362,58 @@ export function TodoDetailModal({
                 Actions
               </p>
               <div className="flex flex-col gap-2">
-                {todo?.actions?.map((action, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="justify-start gap-2 h-auto py-2.5 px-3 text-left"
-                    onClick={() => handleActionClick(action)}
-                    disabled={generatingAction === action.label}
-                  >
-                    {getActionIcon(action)}
-                    <span className="flex-1">{action.label}</span>
-                    {generatedActions.has(action.label) && (
-                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs">
-                        Generated
-                      </Badge>
-                    )}
-                  </Button>
-                ))}
+                {todo?.actions?.map((action, index) => {
+                  const isCalendarCapture =
+                    action.type === "capture" && action.calendarSearch
+                  const isLoading = generatingAction === action.label
+
+                  return (
+                    <div key={index} className="flex flex-col gap-1">
+                      <Button
+                        variant="outline"
+                        className="justify-start gap-2 h-auto py-2.5 px-3 text-left"
+                        onClick={() => handleActionClick(action)}
+                        disabled={isLoading}
+                      >
+                        {getActionIcon(action)}
+                        <span className="flex-1">{action.label}</span>
+                        {generatedActions.has(action.label) && (
+                          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs">
+                            Captured
+                          </Badge>
+                        )}
+                      </Button>
+
+                      {/* Calendar search indicator */}
+                      {isCalendarCapture && (
+                        <div
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${
+                            isLoading
+                              ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400"
+                              : "bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400"
+                          }`}
+                        >
+                          {isLoading ? (
+                            <>
+                              <Search className="h-3 w-3 animate-pulse" />
+                              <span>
+                                Searching for &quot;{action.calendarSearch}
+                                &quot;...
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Calendar className="h-3 w-3" />
+                              <span>
+                                Will search: &quot;{action.calendarSearch}&quot;
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

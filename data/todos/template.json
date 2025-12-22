@@ -16,6 +16,12 @@
           "url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Quarterly+Board+Meeting&details=Quarterly+board+meeting+to+discuss+company+matters+including+financial+aspects,+HR,+pipeline,+support+issues,+and+product+updates.&recur=RRULE:FREQ=MONTHLY;INTERVAL=3"
         },
         {
+          "label": "Capture Board Meeting calendar invites",
+          "type": "capture",
+          "calendarSearch": "Quarterly Board Meeting",
+          "fileNamePrefix": "board-meeting"
+        },
+        {
           "label": "Generate Board Meeting Minutes",
           "type": "generate",
           "fileName": "board-meeting-minutes.md",
@@ -32,6 +38,12 @@
           "label": "Generate a quarterly Management Meeting invite",
           "type": "url",
           "url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Quarterly+Management+Meeting&details=Quarterly+management+meeting+to+discuss+operational+matters,+team+updates,+and+strategic+initiatives.&recur=RRULE:FREQ=MONTHLY;INTERVAL=3"
+        },
+        {
+          "label": "Capture Management Meeting calendar invites",
+          "type": "capture",
+          "calendarSearch": "Quarterly Management Meeting",
+          "fileNamePrefix": "management-meeting"
         },
         {
           "label": "Generate Management Meeting Minutes",
@@ -57,7 +69,15 @@
     {
       "id": "04",
       "title": "Provide screenshot/s of product description",
-      "description": "This can be the company public website, public docs or anything else public. Screenshots should show what your product does and its key features."
+      "description": "This can be the company public website, public docs or anything else public. Screenshots should show what your product does and its key features.",
+      "actions": [
+        {
+          "label": "Capture product website screenshot",
+          "type": "capture",
+          "url": "{{COMPANY_WEBSITE}}",
+          "fileName": "product-description.png"
+        }
+      ]
     },
     {
       "id": "05",
@@ -122,23 +142,53 @@
     {
       "id": "12",
       "title": "Provide Technical Training Resources + screenshots of signatures saying they read it",
-      "description": "These resources are for your employees. Provide technical training materials relevant to your stack and evidence of completion."
+      "description": "These resources are for your employees. Provide technical training materials relevant to your stack and evidence of completion.",
+      "actions": [
+        {
+          "label": "Capture training materials screenshot",
+          "type": "capture",
+          "url": "{{TRAINING_MATERIALS_URL}}",
+          "fileName": "technical-training-materials.png"
+        }
+      ]
     },
     {
       "id": "13",
       "title": "Provide a screenshot of how you communicate new features to customers",
-      "description": "This can be your public docs, a Slack channel, email newsletter, changelog page, or anything else you use to communicate product updates to customers."
+      "description": "This can be your public docs, a Slack channel, email newsletter, changelog page, or anything else you use to communicate product updates to customers.",
+      "actions": [
+        {
+          "label": "Capture customer changelog screenshot",
+          "type": "capture",
+          "url": "{{CUSTOMER_CHANGELOG_URL}}",
+          "fileName": "customer-feature-communication.png"
+        }
+      ]
     },
     {
       "id": "14",
       "title": "Provide a screenshot of how you communicate new features to employees",
-      "description": "This can be your internal docs, a Slack channel, team meetings, or anything else you use to communicate product updates to employees."
+      "description": "This can be your internal docs, a Slack channel, team meetings, or anything else you use to communicate product updates to employees.",
+      "actions": [
+        {
+          "label": "Capture internal communication screenshot",
+          "type": "capture",
+          "url": "{{INTERNAL_COMMUNICATION_URL}}",
+          "fileName": "employee-feature-communication.png"
+        }
+      ]
     },
     {
       "id": "17_18_19",
       "title": "Provide Risk Registry + screenshot of calendar invite + meeting minutes",
       "description": "A risk registry documents identified risks, their likelihood, impact, and mitigation strategies. Include evidence of regular risk review meetings.",
       "actions": [
+        {
+          "label": "Capture Risk Review calendar invites",
+          "type": "capture",
+          "calendarSearch": "Risk Review Meeting",
+          "fileNamePrefix": "risk-review"
+        },
         {
           "label": "Generate Risk Registry",
           "type": "generate",
