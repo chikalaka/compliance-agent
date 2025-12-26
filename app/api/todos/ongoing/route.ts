@@ -23,6 +23,7 @@ interface TodoAction {
   url?: string
   route?: string
   template?: string
+  templateFile?: string
   fileName?: string
 }
 

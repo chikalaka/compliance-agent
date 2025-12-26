@@ -10,6 +10,7 @@ const COMPLIANCE_DATA_DIR = path.join(
   "user-data",
   "compliance-data",
 )
+const TEMPLATES_DIR = path.join(process.cwd(), "data", "templates")
 
 async function loadAllComplianceData(): Promise<string> {
   try {
@@ -74,14 +75,70 @@ ${template}
 Output ONLY the filled document in markdown format, nothing else.`
 }
 
+function buildSection3Prompt(template: string, companyContext: string): string {
+  const now = new Date()
+  const dateStr = now.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
+  return `You are customizing a SOC 2 Section 3 template for a specific company. The template is EXCELLENT and should be preserved AS-IS with only MINIMAL substitutions.
+
+## CRITICAL RULES - READ CAREFULLY:
+1. DO NOT rewrite, rephrase, or restructure ANY part of the template
+2. DO NOT add new sections or remove existing sections
+3. DO NOT change the wording, tone, or style of the template
+4. ONLY substitute the following placeholders with company-specific values:
+   - [company] → the company name
+   - XXX → the company name (when used as company placeholder)
+   - XYZ → the company name or product name (when used as product placeholder)
+   - XXXXX → the company name (when used as company placeholder)
+   - Company-specific department names and roles based on the org chart
+   - Board member names and composition
+   - Specific dates where applicable
+
+## Current Date
+${dateStr}
+
+## Company Context (use ONLY for substitutions)
+${companyContext}
+
+## Template to Customize
+${template}
+
+## What to substitute:
+- Replace "[company]" with the actual company name
+- Replace "XXX", "XYZ", "XXXXX" placeholders with the company/product name where contextually appropriate
+- Update the title date range to reflect the current review period
+- Update Board of Directors composition if provided in company context
+- Update organizational structure/departments if provided in company context
+- Update R&D team structure if provided in company context
+
+## What to KEEP EXACTLY AS-IS:
+- All section headings and structure
+- All control descriptions and security language
+- All process descriptions
+- All policy references (numbered references like **69**, **70**, etc.)
+- All tables and their format
+- The Subservice Organizations and CUEC sections at the end
+- ALL wording that is not a placeholder
+
+Output ONLY the customized document in markdown format. Preserve ALL original formatting.`
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { template, fileName } = body
+    const { template, templateFile, fileName } = body
 
-    if (!template || !fileName) {
+    if (!fileName) {
+      return NextResponse.json({ error: "Missing fileName" }, { status: 400 })
+    }
+
+    if (!template && !templateFile) {
       return NextResponse.json(
-        { error: "Missing template or fileName" },
+        { error: "Missing template or templateFile" },
         { status: 400 },
       )
     }
@@ -89,11 +146,34 @@ export async function POST(request: NextRequest) {
     // Ensure the documents directory exists
     await fs.mkdir(DOCUMENTS_DIR, { recursive: true })
 
+    // Get template content - either from file or directly provided
+    let templateContent: string
+    let isSection3Template = false
+
+    if (templateFile) {
+      // Read template from file
+      const templatePath = path.join(process.cwd(), templateFile)
+      try {
+        templateContent = await fs.readFile(templatePath, "utf-8")
+        // Check if this is the Section 3 template (use conservative prompt)
+        isSection3Template = templateFile.includes("soc-2-section-3")
+      } catch {
+        return NextResponse.json(
+          { error: `Template file not found: ${templateFile}` },
+          { status: 404 },
+        )
+      }
+    } else {
+      templateContent = template
+    }
+
     // Load all company context from compliance data
     const companyContext = await loadAllComplianceData()
 
-    // Build the prompt
-    const prompt = buildPrompt(template, companyContext)
+    // Build the prompt - use conservative prompt for Section 3
+    const prompt = isSection3Template
+      ? buildSection3Prompt(templateContent, companyContext)
+      : buildPrompt(templateContent, companyContext)
 
     // Generate using LLM
     const { text } = await generateText({

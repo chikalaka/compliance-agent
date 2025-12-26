@@ -46,6 +46,7 @@ interface TodoAction {
   url?: string
   route?: string
   template?: string
+  templateFile?: string
   fileName?: string
   // Calendar capture fields
   calendarSearch?: string
@@ -174,7 +175,7 @@ export function TodoDetailModal({
         }
         break
       case "generate":
-        if (action.template && action.fileName) {
+        if ((action.template || action.templateFile) && action.fileName) {
           setGeneratingAction(action.label)
           try {
             const res = await fetch("/api/todos/generate-doc", {
@@ -182,6 +183,7 @@ export function TodoDetailModal({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 template: action.template,
+                templateFile: action.templateFile,
                 fileName: action.fileName,
               }),
             })
