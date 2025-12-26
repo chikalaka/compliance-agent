@@ -22,6 +22,7 @@ import {
   ListTodo,
   ListChecks,
   NotebookPen,
+  KeyRound,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { sections } from "@/lib/sections"
@@ -43,6 +44,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ListTodo,
   ListChecks,
   NotebookPen,
+  KeyRound,
 }
 
 interface SectionStatus {
@@ -94,9 +96,26 @@ const todoItems: TodoItem[] = [
   },
 ]
 
+interface PreparationItem {
+  id: string
+  title: string
+  icon: string
+  href: string
+}
+
+const preparationItems: PreparationItem[] = [
+  {
+    id: "browser-auth",
+    title: "Browser Authentication",
+    icon: "KeyRound",
+    href: "/browser-auth",
+  },
+]
+
 export function Sidebar() {
   const pathname = usePathname()
   const [statuses, setStatuses] = useState<Record<string, SectionStatus>>({})
+  const [preparationOpen, setPreparationOpen] = useState(true)
   const [companyDataOpen, setCompanyDataOpen] = useState(true)
   const [actionsOpen, setActionsOpen] = useState(true)
   const [todosOpen, setTodosOpen] = useState(true)
@@ -135,6 +154,55 @@ export function Sidebar() {
 
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-2">
+          {/* Preparation Section */}
+          <div>
+            <button
+              onClick={() => setPreparationOpen(!preparationOpen)}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              {preparationOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+              Preparation
+            </button>
+
+            {preparationOpen && (
+              <div className="mt-1 space-y-1 pl-2">
+                {preparationItems.map((item) => {
+                  const Icon = iconMap[item.icon] || Circle
+                  const isActive = pathname === item.href
+
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className={cn(
+                        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                        isActive
+                          ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
+                          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100",
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 shrink-0",
+                          isActive
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-zinc-400 group-hover:text-zinc-600 dark:text-zinc-500 dark:group-hover:text-zinc-300",
+                        )}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate font-medium">{item.title}</p>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Company Data Section */}
           <div>
             <button

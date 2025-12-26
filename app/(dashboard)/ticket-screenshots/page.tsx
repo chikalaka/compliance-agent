@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from "lucide-react"
 import { toast } from "sonner"
+import Link from "next/link"
 
 const STORAGE_KEY = "ticket-screenshots-config"
 
@@ -35,6 +36,8 @@ interface AuthStatus {
   services: {
     github: boolean
     linear: boolean
+    googleWorkspace: boolean
+    aws: boolean
   }
 }
 
@@ -273,11 +276,27 @@ export default function TicketScreenshotsPage() {
                         : "text-sm text-amber-700 dark:text-amber-300"
                     }
                   >
-                    {isAuthenticated
-                      ? "You're logged in to GitHub and Linear"
-                      : `Please authenticate to: ${
-                          missingServices.join(", ") || "GitHub and Linear"
-                        }`}
+                    {isAuthenticated ? (
+                      <>
+                        You&apos;re logged in to GitHub and Linear.{" "}
+                        <Link
+                          href="/browser-auth"
+                          className="underline underline-offset-2 hover:text-emerald-900 dark:hover:text-emerald-100"
+                        >
+                          Manage connections
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        This feature requires GitHub and Linear.{" "}
+                        <Link
+                          href="/browser-auth"
+                          className="underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100"
+                        >
+                          Go to Browser Authentication
+                        </Link>
+                      </>
+                    )}
                   </p>
                 </div>
               </div>

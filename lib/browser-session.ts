@@ -10,6 +10,8 @@ export interface SessionStatus {
   services: {
     github: boolean
     linear: boolean
+    googleWorkspace: boolean
+    aws: boolean
   }
 }
 
@@ -72,14 +74,14 @@ export function hasValidCookies(domains: string[]): Record<string, boolean> {
 }
 
 /**
- * Gets the current session status for GitHub and Linear.
+ * Gets the current session status for GitHub, Linear, Google Workspace, and AWS.
  * Checks for specific authentication cookies.
  */
 export function getSessionStatus(): SessionStatus {
   if (!sessionExists()) {
     return {
       authenticated: false,
-      services: { github: false, linear: false },
+      services: { github: false, linear: false, googleWorkspace: false, aws: false },
     }
   }
 
@@ -115,25 +117,62 @@ export function getSessionStatus(): SessionStatus {
       },
     )
 
+    // Check for Google Workspace authentication
+    const hasGoogleAuth = cookies.some(
+      (cookie: { domain: string; name: string }) => {
+        const domain = cookie.domain.replace(/^\./, "")
+        const isGoogleDomain = domain.includes("google.com")
+        // Google uses various auth cookies like SAPISID, SSID, SID, HSID, etc.
+        return (
+          isGoogleDomain &&
+          (cookie.name === "SAPISID" ||
+            cookie.name === "SSID" ||
+            cookie.name === "SID" ||
+            cookie.name === "HSID" ||
+            cookie.name === "APISID")
+        )
+      },
+    )
+
+    // Check for AWS authentication
+    const hasAwsAuth = cookies.some(
+      (cookie: { domain: string; name: string }) => {
+        const domain = cookie.domain.replace(/^\./, "")
+        const isAwsDomain = domain.includes("aws.amazon.com") || domain.includes("signin.aws.amazon.com")
+        const name = cookie.name.toLowerCase()
+        // AWS uses various cookies for authentication
+        return (
+          isAwsDomain &&
+          (name.includes("aws-userinfo") ||
+            name.includes("aws-creds") ||
+            name.includes("noflush_") ||
+            cookie.name === "AWSALB" ||
+            cookie.name === "aws-account-alias")
+        )
+      },
+    )
+
     return {
       authenticated: hasGithubAuth && hasLinearAuth,
       services: {
         github: hasGithubAuth,
         linear: hasLinearAuth,
+        googleWorkspace: hasGoogleAuth,
+        aws: hasAwsAuth,
       },
     }
   } catch (error) {
     console.error("Error reading session status:", error)
     return {
       authenticated: false,
-      services: { github: false, linear: false },
+      services: { github: false, linear: false, googleWorkspace: false, aws: false },
     }
   }
 }
 
 /**
  * Launches a visible browser for the user to authenticate.
- * Opens tabs for GitHub and Linear login pages.
+ * Opens tabs for GitHub, Linear, Google Workspace, and AWS login pages.
  * Returns when the user closes the browser or timeout is reached.
  */
 export async function launchAuthBrowser(
@@ -182,17 +221,18 @@ export async function launchAuthBrowser(
 
     const context = await browser.newContext(contextOptions)
 
+    // Helper to add webdriver bypass to a page
+    const addWebdriverBypass = async (page: Awaited<ReturnType<typeof context.newPage>>) => {
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, "webdriver", {
+          get: () => undefined,
+        })
+      })
+    }
+
     // Open GitHub - go to login page or home page depending on session
     const githubPage = await context.newPage()
-
-    // Remove webdriver property to bypass automation detection
-    await githubPage.addInitScript(() => {
-      Object.defineProperty(navigator, "webdriver", {
-        get: () => undefined,
-      })
-    })
-
-    // If we have existing session, go to home page to check auth, otherwise login page
+    await addWebdriverBypass(githubPage)
     const githubUrl = existingSession
       ? "https://github.com"
       : "https://github.com/login"
@@ -200,19 +240,27 @@ export async function launchAuthBrowser(
 
     // Open Linear - go to login page or home page depending on session
     const linearPage = await context.newPage()
-
-    // Remove webdriver property on Linear page too
-    await linearPage.addInitScript(() => {
-      Object.defineProperty(navigator, "webdriver", {
-        get: () => undefined,
-      })
-    })
-
-    // If we have existing session, go to home page to check auth, otherwise login page
+    await addWebdriverBypass(linearPage)
     const linearUrl = existingSession
       ? "https://linear.app"
       : "https://linear.app/login"
     await linearPage.goto(linearUrl)
+
+    // Open Google Workspace - go to accounts page
+    const googlePage = await context.newPage()
+    await addWebdriverBypass(googlePage)
+    const googleUrl = existingSession
+      ? "https://workspace.google.com"
+      : "https://accounts.google.com"
+    await googlePage.goto(googleUrl)
+
+    // Open AWS Console - go to sign in page
+    const awsPage = await context.newPage()
+    await addWebdriverBypass(awsPage)
+    const awsUrl = existingSession
+      ? "https://console.aws.amazon.com"
+      : "https://signin.aws.amazon.com"
+    await awsPage.goto(awsUrl)
 
     // Bring GitHub tab to focus
     await githubPage.bringToFront()
@@ -222,7 +270,7 @@ export async function launchAuthBrowser(
     )
 
     // Wait for the user to authenticate and close the browser,
-    // or for cookies to appear on both sites
+    // or for cookies to appear on all sites
     const startTime = Date.now()
 
     while (Date.now() - startTime < timeout) {
@@ -233,7 +281,7 @@ export async function launchAuthBrowser(
         break
       }
 
-      // Check if we have cookies for both services
+      // Check if we have cookies for core services (GitHub and Linear are required)
       const githubCookies = await context.cookies("https://github.com")
       const linearCookies = await context.cookies("https://linear.app")
 
@@ -249,8 +297,9 @@ export async function launchAuthBrowser(
           c.name.toLowerCase().includes("token"),
       )
 
+      // Core services authenticated - auto-close
       if (hasGithubAuth && hasLinearAuth) {
-        console.log("Authentication detected for both services!")
+        console.log("Core authentication detected (GitHub + Linear)!")
         // Wait a bit to ensure cookies are fully set
         await new Promise((resolve) => setTimeout(resolve, 2000))
         // Save session state
