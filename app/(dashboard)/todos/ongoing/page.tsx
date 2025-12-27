@@ -11,13 +11,23 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 
 type TodoStatus = "todo" | "wip" | "done"
 
+interface ActionInput {
+  key: string
+  label: string
+  defaultValue: string
+}
+
 interface TodoAction {
   label: string
-  type: "url" | "route" | "generate"
+  type: "url" | "route" | "generate" | "capture"
   url?: string
   route?: string
   template?: string
+  templateFile?: string
   fileName?: string
+  calendarSearch?: string
+  fileNamePrefix?: string
+  inputs?: ActionInput[]
 }
 
 interface OngoingTodo {

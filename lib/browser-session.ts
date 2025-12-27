@@ -5,6 +5,10 @@ import * as path from "path"
 const SESSION_ID = "compliance-agent-browser"
 const SESSIONS_DIR = ".sessions"
 
+// Module-level state to hold the active auth browser session
+let activeBrowser: Browser | null = null
+let activeContext: BrowserContext | null = null
+
 export interface SessionStatus {
   authenticated: boolean
   services: {
@@ -73,84 +77,131 @@ export function hasValidCookies(domains: string[]): Record<string, boolean> {
   return result
 }
 
+interface CookieData {
+  domain: string
+  name: string
+  value: string
+  expires?: number
+}
+
+/**
+ * Helper to check if a cookie is valid (has non-empty value and is not expired).
+ */
+function isValidCookie(cookie: CookieData): boolean {
+  // Check that value is not empty or just whitespace
+  if (!cookie.value || cookie.value.trim() === "") {
+    return false
+  }
+
+  // Check if cookie has expired (expires is in seconds since epoch, -1 means session cookie)
+  if (cookie.expires && cookie.expires !== -1) {
+    const expiresMs = cookie.expires * 1000
+    if (expiresMs < Date.now()) {
+      return false
+    }
+  }
+
+  return true
+}
+
 /**
  * Gets the current session status for GitHub, Linear, Google Workspace, and AWS.
- * Checks for specific authentication cookies.
+ * Checks for specific authentication cookies with strict validation.
  */
 export function getSessionStatus(): SessionStatus {
   if (!sessionExists()) {
     return {
       authenticated: false,
-      services: { github: false, linear: false, googleWorkspace: false, aws: false },
+      services: {
+        github: false,
+        linear: false,
+        googleWorkspace: false,
+        aws: false,
+      },
     }
   }
 
   try {
     const sessionData = JSON.parse(fs.readFileSync(getSessionPath(), "utf-8"))
-    const cookies = sessionData.cookies || []
+    const cookies: CookieData[] = sessionData.cookies || []
 
     // Check for GitHub authentication
-    const hasGithubAuth = cookies.some(
-      (cookie: { domain: string; name: string; value: string }) => {
-        const domain = cookie.domain.replace(/^\./, "")
-        const isGithubDomain = domain.includes("github.com")
-        return (
-          isGithubDomain &&
-          (cookie.name === "user_session" ||
-            (cookie.name === "logged_in" && cookie.value === "yes"))
-        )
-      },
-    )
+    // GitHub sets `user_session` cookie when logged in, and `logged_in=yes`
+    const hasGithubAuth = cookies.some((cookie) => {
+      const domain = cookie.domain.replace(/^\./, "")
+      const isGithubDomain = domain.includes("github.com")
+      if (!isGithubDomain || !isValidCookie(cookie)) return false
+
+      // Primary indicator: user_session cookie with substantial value
+      if (cookie.name === "user_session" && cookie.value.length > 20) {
+        return true
+      }
+      // Secondary indicator: logged_in cookie explicitly set to "yes"
+      if (cookie.name === "logged_in" && cookie.value === "yes") {
+        return true
+      }
+      return false
+    })
 
     // Check for Linear authentication
-    const hasLinearAuth = cookies.some(
-      (cookie: { domain: string; name: string }) => {
-        const domain = cookie.domain.replace(/^\./, "")
-        const isLinearDomain = domain.includes("linear.app")
-        const name = cookie.name.toLowerCase()
-        return (
-          isLinearDomain &&
-          (name.includes("auth") ||
-            name.includes("session") ||
-            name.includes("token"))
-        )
-      },
-    )
+    // Linear uses cookies with "linear" prefix for auth
+    const hasLinearAuth = cookies.some((cookie) => {
+      const domain = cookie.domain.replace(/^\./, "")
+      const isLinearDomain = domain.includes("linear.app")
+      if (!isLinearDomain || !isValidCookie(cookie)) return false
+
+      const name = cookie.name.toLowerCase()
+      // Look for Linear-specific auth cookies
+      // Linear typically uses cookies like `linear-xxx` or session tokens
+      if (name.startsWith("linear") && cookie.value.length > 10) {
+        return true
+      }
+      // Also check for common session/token patterns with substantial values
+      if (
+        (name.includes("session") || name.includes("token")) &&
+        cookie.value.length > 20
+      ) {
+        return true
+      }
+      return false
+    })
 
     // Check for Google Workspace authentication
-    const hasGoogleAuth = cookies.some(
-      (cookie: { domain: string; name: string }) => {
-        const domain = cookie.domain.replace(/^\./, "")
-        const isGoogleDomain = domain.includes("google.com")
-        // Google uses various auth cookies like SAPISID, SSID, SID, HSID, etc.
-        return (
-          isGoogleDomain &&
-          (cookie.name === "SAPISID" ||
-            cookie.name === "SSID" ||
-            cookie.name === "SID" ||
-            cookie.name === "HSID" ||
-            cookie.name === "APISID")
-        )
-      },
-    )
+    // Google uses SAPISID, SSID, SID, HSID, APISID for auth
+    const hasGoogleAuth = cookies.some((cookie) => {
+      const domain = cookie.domain.replace(/^\./, "")
+      const isGoogleDomain = domain.includes("google.com")
+      if (!isGoogleDomain || !isValidCookie(cookie)) return false
+
+      // These are the core Google auth cookies
+      const googleAuthCookies = ["SAPISID", "SSID", "SID", "HSID", "APISID"]
+      if (googleAuthCookies.includes(cookie.name) && cookie.value.length > 10) {
+        return true
+      }
+      return false
+    })
 
     // Check for AWS authentication
-    const hasAwsAuth = cookies.some(
-      (cookie: { domain: string; name: string }) => {
-        const domain = cookie.domain.replace(/^\./, "")
-        const isAwsDomain = domain.includes("aws.amazon.com") || domain.includes("signin.aws.amazon.com")
-        const name = cookie.name.toLowerCase()
-        // AWS uses various cookies for authentication
-        return (
-          isAwsDomain &&
-          (name.includes("aws-userinfo") ||
-            name.includes("aws-creds") ||
-            name.includes("noflush_") ||
-            cookie.name === "AWSALB" ||
-            cookie.name === "aws-account-alias")
-        )
-      },
-    )
+    const hasAwsAuth = cookies.some((cookie) => {
+      const domain = cookie.domain.replace(/^\./, "")
+      const isAwsDomain =
+        domain.includes("aws.amazon.com") ||
+        domain.includes("signin.aws.amazon.com")
+      if (!isAwsDomain || !isValidCookie(cookie)) return false
+
+      const name = cookie.name.toLowerCase()
+      // AWS auth cookies with meaningful values
+      if (
+        (name.includes("aws-userinfo") ||
+          name.includes("aws-creds") ||
+          name.includes("noflush_") ||
+          cookie.name === "aws-account-alias") &&
+        cookie.value.length > 5
+      ) {
+        return true
+      }
+      return false
+    })
 
     return {
       authenticated: hasGithubAuth && hasLinearAuth,
@@ -165,39 +216,81 @@ export function getSessionStatus(): SessionStatus {
     console.error("Error reading session status:", error)
     return {
       authenticated: false,
-      services: { github: false, linear: false, googleWorkspace: false, aws: false },
+      services: {
+        github: false,
+        linear: false,
+        googleWorkspace: false,
+        aws: false,
+      },
     }
   }
 }
 
 /**
- * Launches a visible browser for the user to authenticate.
- * Opens tabs for GitHub, Linear, Google Workspace, and AWS login pages.
- * Returns when the user closes the browser or timeout is reached.
+ * Checks if there's an active auth browser session.
  */
-export async function launchAuthBrowser(
-  options: AuthBrowserOptions = {},
-): Promise<{ success: boolean; error?: string }> {
-  const { timeout = 5 * 60 * 1000 } = options // Default 5 minutes
+export function isAuthBrowserOpen(): boolean {
+  return activeBrowser !== null && activeBrowser.isConnected()
+}
+
+/**
+ * Starts the auth browser - opens Chrome with tabs for unauthenticated services.
+ * Returns immediately after opening the browser (non-blocking).
+ * Call stopAuthBrowser() when user is done to save session and close.
+ */
+export async function startAuthBrowser(): Promise<{
+  success: boolean
+  error?: string
+}> {
+  // If browser is already open, return error
+  if (isAuthBrowserOpen()) {
+    return {
+      success: false,
+      error: "Auth browser is already open. Click Done when finished.",
+    }
+  }
 
   ensureSessionsDir()
 
-  let browser: Browser | null = null
+  // Check current authentication status to determine which tabs to open
+  const currentStatus = getSessionStatus()
+  const unauthenticatedServices = {
+    github: !currentStatus.services.github,
+    linear: !currentStatus.services.linear,
+    googleWorkspace: !currentStatus.services.googleWorkspace,
+    aws: !currentStatus.services.aws,
+  }
+
+  // Check if all services are already authenticated
+  const allAuthenticated = Object.values(unauthenticatedServices).every(
+    (v) => !v,
+  )
+  if (allAuthenticated) {
+    return {
+      success: true,
+      error: "All services are already authenticated. No browser needed.",
+    }
+  }
+
+  const servicesToAuth = Object.entries(unauthenticatedServices)
+    .filter(([, needsAuth]) => needsAuth)
+    .map(([service]) => service)
+
+  console.log("Services needing authentication:", servicesToAuth.join(", "))
 
   try {
-    // Launch a visible browser using installed Chrome (not Playwright's Chromium)
-    // This is required for Google SSO to work - Google blocks automated browsers
-    browser = await chromium.launch({
+    // Launch a visible browser using installed Chrome
+    activeBrowser = await chromium.launch({
       headless: false,
-      channel: "chrome", // Use installed Chrome instead of Chromium
+      channel: "chrome",
       args: [
         "--start-maximized",
-        "--disable-blink-features=AutomationControlled", // Hide automation
+        "--disable-blink-features=AutomationControlled",
         "--disable-features=IsolateOrigins,site-per-process",
       ],
     })
 
-    // Load existing session if available so user doesn't have to re-login from scratch
+    // Load existing session if available
     const existingSession = loadSession()
     const contextOptions: {
       viewport: null
@@ -205,24 +298,24 @@ export async function launchAuthBrowser(
       bypassCSP: boolean
       storageState?: string
     } = {
-      viewport: null, // Use full window size
-      // Set a realistic user agent
+      viewport: null,
       userAgent:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      // Remove webdriver property
       bypassCSP: true,
     }
 
-    // If we have an existing session, load it
     if (existingSession) {
       contextOptions.storageState = existingSession
       console.log("Loading existing session into auth browser...")
     }
 
-    const context = await browser.newContext(contextOptions)
+    const context = await activeBrowser.newContext(contextOptions)
+    activeContext = context
 
     // Helper to add webdriver bypass to a page
-    const addWebdriverBypass = async (page: Awaited<ReturnType<typeof context.newPage>>) => {
+    const addWebdriverBypass = async (
+      page: Awaited<ReturnType<typeof context.newPage>>,
+    ) => {
       await page.addInitScript(() => {
         Object.defineProperty(navigator, "webdriver", {
           get: () => undefined,
@@ -230,109 +323,60 @@ export async function launchAuthBrowser(
       })
     }
 
-    // Open GitHub - go to login page or home page depending on session
-    const githubPage = await context.newPage()
-    await addWebdriverBypass(githubPage)
-    const githubUrl = existingSession
-      ? "https://github.com"
-      : "https://github.com/login"
-    await githubPage.goto(githubUrl)
+    // Track first page for focusing
+    let firstPage: Awaited<ReturnType<typeof context.newPage>> | null = null
 
-    // Open Linear - go to login page or home page depending on session
-    const linearPage = await context.newPage()
-    await addWebdriverBypass(linearPage)
-    const linearUrl = existingSession
-      ? "https://linear.app"
-      : "https://linear.app/login"
-    await linearPage.goto(linearUrl)
+    // Only open tabs for unauthenticated services
+    if (unauthenticatedServices.github) {
+      const githubPage = await context.newPage()
+      await addWebdriverBypass(githubPage)
+      await githubPage.goto("https://github.com/login")
+      if (!firstPage) firstPage = githubPage
+      console.log("Opened GitHub login tab")
+    }
 
-    // Open Google Workspace - go to accounts page
-    const googlePage = await context.newPage()
-    await addWebdriverBypass(googlePage)
-    const googleUrl = existingSession
-      ? "https://workspace.google.com"
-      : "https://accounts.google.com"
-    await googlePage.goto(googleUrl)
+    if (unauthenticatedServices.linear) {
+      const linearPage = await context.newPage()
+      await addWebdriverBypass(linearPage)
+      await linearPage.goto("https://linear.app/login")
+      if (!firstPage) firstPage = linearPage
+      console.log("Opened Linear login tab")
+    }
 
-    // Open AWS Console - go to sign in page
-    const awsPage = await context.newPage()
-    await addWebdriverBypass(awsPage)
-    const awsUrl = existingSession
-      ? "https://console.aws.amazon.com"
-      : "https://signin.aws.amazon.com"
-    await awsPage.goto(awsUrl)
+    if (unauthenticatedServices.googleWorkspace) {
+      const googlePage = await context.newPage()
+      await addWebdriverBypass(googlePage)
+      await googlePage.goto("https://accounts.google.com")
+      if (!firstPage) firstPage = googlePage
+      console.log("Opened Google login tab")
+    }
 
-    // Bring GitHub tab to focus
-    await githubPage.bringToFront()
+    if (unauthenticatedServices.aws) {
+      const awsPage = await context.newPage()
+      await addWebdriverBypass(awsPage)
+      await awsPage.goto("https://signin.aws.amazon.com")
+      if (!firstPage) firstPage = awsPage
+      console.log("Opened AWS login tab")
+    }
+
+    // Bring first tab to focus
+    if (firstPage) {
+      await firstPage.bringToFront()
+    }
 
     console.log(
-      "Browser opened for authentication. Waiting for user to log in...",
+      "Browser opened for authentication. Click Done when finished logging in.",
     )
 
-    // Wait for the user to authenticate and close the browser,
-    // or for cookies to appear on all sites
-    const startTime = Date.now()
-
-    while (Date.now() - startTime < timeout) {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Check if browser was closed by user
-      if (!browser.isConnected()) {
-        break
-      }
-
-      // Check if we have cookies for core services (GitHub and Linear are required)
-      const githubCookies = await context.cookies("https://github.com")
-      const linearCookies = await context.cookies("https://linear.app")
-
-      const hasGithubAuth = githubCookies.some(
-        (c) =>
-          c.name === "user_session" ||
-          (c.name === "logged_in" && c.value === "yes"),
-      )
-      const hasLinearAuth = linearCookies.some(
-        (c) =>
-          c.name.toLowerCase().includes("auth") ||
-          c.name.toLowerCase().includes("session") ||
-          c.name.toLowerCase().includes("token"),
-      )
-
-      // Core services authenticated - auto-close
-      if (hasGithubAuth && hasLinearAuth) {
-        console.log("Core authentication detected (GitHub + Linear)!")
-        // Wait a bit to ensure cookies are fully set
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-        // Save session state
-        await saveSession(context)
-        await browser.close()
-        return { success: true }
-      }
-    }
-
-    // If we got here and browser is still connected, save whatever state we have
-    if (browser.isConnected()) {
-      await saveSession(context)
-      await browser.close()
-    }
-
-    // Check final status
-    const status = getSessionStatus()
-    if (status.authenticated) {
-      return { success: true }
-    }
-
-    const missing: string[] = []
-    if (!status.services.github) missing.push("GitHub")
-    if (!status.services.linear) missing.push("Linear")
-
-    return {
-      success: false,
-      error: `Authentication incomplete. Missing: ${missing.join(", ")}`,
-    }
+    return { success: true }
   } catch (error) {
-    if (browser?.isConnected()) {
-      await browser.close()
+    // Clean up on error
+    if (activeBrowser?.isConnected()) {
+      await activeBrowser.close()
     }
+    activeBrowser = null
+    activeContext = null
+
     return {
       success: false,
       error:
@@ -344,13 +388,71 @@ export async function launchAuthBrowser(
 }
 
 /**
- * Saves the browser context's storage state to the session file.
+ * Stops the auth browser - saves the session and closes the browser.
+ * Call this when the user clicks "Done".
  */
-export async function saveSession(context: BrowserContext): Promise<void> {
+export async function stopAuthBrowser(): Promise<{
+  success: boolean
+  error?: string
+}> {
+  if (!activeBrowser || !activeContext) {
+    return {
+      success: false,
+      error: "No auth browser is currently open.",
+    }
+  }
+
+  try {
+    // Save the session before closing
+    if (activeBrowser.isConnected()) {
+      await saveSession(activeContext)
+      await activeBrowser.close()
+    }
+
+    // Clear the module-level references
+    activeBrowser = null
+    activeContext = null
+
+    // Check final status
+    const status = getSessionStatus()
+    console.log("Auth browser closed. Session saved.")
+
+    return { success: status.authenticated }
+  } catch (error) {
+    // Force cleanup even on error
+    try {
+      if (activeBrowser?.isConnected()) {
+        await activeBrowser.close()
+      }
+    } catch {
+      // Ignore close errors
+    }
+    activeBrowser = null
+    activeContext = null
+
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to stop auth browser",
+    }
+  }
+}
+
+/**
+ * Saves the browser context's storage state to the session file.
+ * @param context - The browser context to save
+ * @param verbose - Whether to log the save (default: true)
+ */
+export async function saveSession(
+  context: BrowserContext,
+  verbose = true,
+): Promise<void> {
   ensureSessionsDir()
   const sessionPath = getSessionPath()
   await context.storageState({ path: sessionPath })
-  console.log(`Session saved to: ${sessionPath}`)
+  if (verbose) {
+    console.log(`Session saved to: ${sessionPath}`)
+  }
 }
 
 /**

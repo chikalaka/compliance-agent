@@ -1,36 +1,36 @@
 import { NextResponse } from "next/server"
-import { startAuthBrowser } from "@/lib/browser-session"
+import { stopAuthBrowser } from "@/lib/browser-session"
 
 export async function POST() {
   try {
-    // Start the browser (returns immediately, non-blocking)
-    const result = await startAuthBrowser()
+    const result = await stopAuthBrowser()
 
     if (result.success) {
       return NextResponse.json({
         success: true,
-        message: "Browser opened. Click Done when finished logging in.",
+        message: "Authentication session saved and browser closed.",
       })
     }
 
     return NextResponse.json(
       {
         success: false,
-        error: result.error || "Failed to open browser",
+        error: result.error || "Failed to stop auth browser",
       },
       { status: 400 },
     )
   } catch (error) {
-    console.error("Auth browser error:", error)
+    console.error("Stop auth browser error:", error)
     return NextResponse.json(
       {
         success: false,
         error:
           error instanceof Error
             ? error.message
-            : "Failed to launch authentication browser",
+            : "Failed to stop auth browser",
       },
       { status: 500 },
     )
   }
 }
+

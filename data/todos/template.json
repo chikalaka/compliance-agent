@@ -13,13 +13,27 @@
         {
           "label": "Generate a quarterly Board Meeting invite",
           "type": "url",
-          "url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Quarterly+Board+Meeting&details=Quarterly+board+meeting+to+discuss+company+matters+including+financial+aspects,+HR,+pipeline,+support+issues,+and+product+updates.&recur=RRULE:FREQ=MONTHLY;INTERVAL=3"
+          "url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text={{meetingName}}&details=Quarterly+board+meeting+to+discuss+company+matters+including+financial+aspects,+HR,+pipeline,+support+issues,+and+product+updates.&recur=RRULE:FREQ=MONTHLY;INTERVAL=3",
+          "inputs": [
+            {
+              "key": "meetingName",
+              "label": "Meeting name",
+              "defaultValue": "Quarterly Board Meeting"
+            }
+          ]
         },
         {
           "label": "Capture Board Meeting calendar invites",
           "type": "capture",
-          "calendarSearch": "Quarterly Board Meeting",
-          "fileNamePrefix": "board-meeting"
+          "calendarSearch": "{{meetingName}}",
+          "fileNamePrefix": "board-meeting",
+          "inputs": [
+            {
+              "key": "meetingName",
+              "label": "Meeting name to search",
+              "defaultValue": "Quarterly Board Meeting"
+            }
+          ]
         },
         {
           "label": "Generate Board Meeting Minutes",
@@ -37,13 +51,27 @@
         {
           "label": "Generate a quarterly Management Meeting invite",
           "type": "url",
-          "url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Quarterly+Management+Meeting&details=Quarterly+management+meeting+to+discuss+operational+matters,+team+updates,+and+strategic+initiatives.&recur=RRULE:FREQ=MONTHLY;INTERVAL=3"
+          "url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text={{meetingName}}&details=Quarterly+management+meeting+to+discuss+operational+matters,+team+updates,+and+strategic+initiatives.&recur=RRULE:FREQ=MONTHLY;INTERVAL=3",
+          "inputs": [
+            {
+              "key": "meetingName",
+              "label": "Meeting name",
+              "defaultValue": "Quarterly Management Meeting"
+            }
+          ]
         },
         {
           "label": "Capture Management Meeting calendar invites",
           "type": "capture",
-          "calendarSearch": "Quarterly Management Meeting",
-          "fileNamePrefix": "management-meeting"
+          "calendarSearch": "{{meetingName}}",
+          "fileNamePrefix": "management-meeting",
+          "inputs": [
+            {
+              "key": "meetingName",
+              "label": "Meeting name to search",
+              "defaultValue": "Quarterly Management Meeting"
+            }
+          ]
         },
         {
           "label": "Generate Management Meeting Minutes",
@@ -90,6 +118,10 @@
           "route": "/generate-policies"
         }
       ]
+    },
+    {
+      "id": "06",
+      "title": "Provide an Information Security Policy"
     },
     {
       "id": "07",
@@ -186,8 +218,15 @@
         {
           "label": "Capture Risk Review calendar invites",
           "type": "capture",
-          "calendarSearch": "Risk Review Meeting",
-          "fileNamePrefix": "risk-review"
+          "calendarSearch": "{{meetingName}}",
+          "fileNamePrefix": "risk-review",
+          "inputs": [
+            {
+              "key": "meetingName",
+              "label": "Meeting name to search",
+              "defaultValue": "Risk Review Meeting"
+            }
+          ]
         },
         {
           "label": "Generate Risk Registry",

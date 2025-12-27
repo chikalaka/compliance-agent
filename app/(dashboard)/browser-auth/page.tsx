@@ -70,7 +70,8 @@ const services: ServiceConfig[] = [
 export default function BrowserAuthPage() {
   const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
-  const [isAuthenticating, setIsAuthenticating] = useState(false)
+  const [isBrowserOpen, setIsBrowserOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const checkAuthStatus = useCallback(async () => {
     setIsCheckingAuth(true)
@@ -93,40 +94,67 @@ export default function BrowserAuthPage() {
   }, [checkAuthStatus])
 
   const handleAuthenticate = async () => {
-    setIsAuthenticating(true)
-
-    toast.info("Opening browser for authentication...", {
-      description:
-        "Please log in to the services you need in the browser window that opens.",
-      duration: 10000,
-    })
+    setIsLoading(true)
 
     try {
       const res = await fetch("/api/browser/auth", { method: "POST" })
       const data = await res.json()
 
       if (data.success) {
-        toast.success("Authentication successful!", {
-          description: "Your browser session has been saved.",
+        setIsBrowserOpen(true)
+        toast.success("Browser opened!", {
+          description: "Log in to the services, then click Done.",
         })
-        await checkAuthStatus()
       } else {
-        toast.error("Authentication incomplete", {
-          description:
-            data.error || "Please try again and log in to the required services.",
+        toast.error("Failed to open browser", {
+          description: data.error || "Please try again.",
         })
-        await checkAuthStatus()
       }
     } catch (error) {
       console.error("Auth error:", error)
-      toast.error("Authentication failed", {
+      toast.error("Failed to open browser", {
         description:
           error instanceof Error
             ? error.message
             : "An unexpected error occurred.",
       })
     } finally {
-      setIsAuthenticating(false)
+      setIsLoading(false)
+    }
+  }
+
+  const handleDone = async () => {
+    setIsLoading(true)
+
+    try {
+      const res = await fetch("/api/browser/auth/stop", { method: "POST" })
+      const data = await res.json()
+
+      setIsBrowserOpen(false)
+
+      if (data.success) {
+        toast.success("Session saved!", {
+          description: "Your browser session has been saved.",
+        })
+      } else {
+        toast.info("Browser closed", {
+          description: data.error || "Session may not be complete.",
+        })
+      }
+
+      await checkAuthStatus()
+    } catch (error) {
+      console.error("Stop auth error:", error)
+      setIsBrowserOpen(false)
+      toast.error("Error closing browser", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
+      })
+      await checkAuthStatus()
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -191,8 +219,8 @@ export default function BrowserAuthPage() {
                 {connectedCount === totalCount
                   ? "All services are authenticated"
                   : connectedCount > 0
-                    ? "Some services need authentication"
-                    : "No services authenticated yet"}
+                  ? "Some services need authentication"
+                  : "No services authenticated yet"}
               </p>
             </div>
           </div>
@@ -201,30 +229,57 @@ export default function BrowserAuthPage() {
               variant="outline"
               size="sm"
               onClick={checkAuthStatus}
-              disabled={isCheckingAuth}
+              disabled={isCheckingAuth || isBrowserOpen}
             >
               <RefreshCw
-                className={`mr-2 h-4 w-4 ${isCheckingAuth ? "animate-spin" : ""}`}
+                className={`mr-2 h-4 w-4 ${
+                  isCheckingAuth ? "animate-spin" : ""
+                }`}
               />
-              Refresh
+              Check Connection Statuses
             </Button>
-            <Button
-              onClick={handleAuthenticate}
-              disabled={isAuthenticating}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isAuthenticating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  <KeyRound className="mr-2 h-4 w-4" />
-                  Authenticate All
-                </>
-              )}
-            </Button>
+            {isBrowserOpen ? (
+              <Button
+                onClick={handleDone}
+                disabled={isLoading}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Done
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleAuthenticate}
+                disabled={isLoading || connectedCount === totalCount}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Opening...
+                  </>
+                ) : connectedCount === totalCount ? (
+                  <>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    All Connected
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    Authenticate
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -316,23 +371,21 @@ export default function BrowserAuthPage() {
           <ul className="mt-3 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-              Clicking &quot;Authenticate All&quot; opens a browser window with tabs
-              for each service.
+              Click &quot;Authenticate&quot; to open a browser with tabs for
+              services that need login.
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-              Log in to each service as you normally would. Your session cookies
-              will be saved.
+              Log in to each service as you normally would.
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-              The browser will close automatically once core services (GitHub +
-              Linear) are authenticated.
+              When finished, click &quot;Done&quot; to save your session and
+              close the browser.
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-              Sessions are stored locally and persist until you clear them or
-              they expire.
+              Sessions are stored locally and persist until they expire.
             </li>
           </ul>
         </CardContent>
@@ -340,4 +393,3 @@ export default function BrowserAuthPage() {
     </div>
   )
 }
-
