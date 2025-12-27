@@ -39,7 +39,7 @@
           "label": "Generate Board Meeting Minutes",
           "type": "generate",
           "fileName": "board-meeting-minutes.md",
-          "template": "# Board Meeting Minutes\n\n**Date and Time:** {{DATE}}\n\n**List of Attendees:** {{BOARD_MEMBERS}}\n\n## Agenda Items Discussed\n\n1. **Financial Aspects** - Review of quarterly financial performance, budget status, and financial projections\n2. **HR** - Updates on hiring, team changes, and organizational matters\n3. **Pipeline of Clients** - Current sales pipeline, new opportunities, and client acquisition status\n4. **Support Issues Review** - Summary of customer support tickets, resolution rates, and outstanding issues\n5. **Discussion on Product and New Features** - Product roadmap updates, feature releases, and technical developments\n\n## Decisions Made\n\n- [Decision 1: To be filled based on meeting discussion]\n- [Decision 2: To be filled based on meeting discussion]\n- [Decision 3: To be filled based on meeting discussion]\n\n## Action Items\n\n| Action Item | Owner | Due Date |\n|-------------|-------|----------|\n| [Action 1] | [Owner] | [Date] |\n| [Action 2] | [Owner] | [Date] |\n| [Action 3] | [Owner] | [Date] |\n\n---\n\n**Minutes Prepared By:** {{OWNER}}\n\n**Approved By:** {{OWNER}}",
+          "templateFile": "data/templates/board-meeting-minutes.md",
           "inputs": [
             {
               "key": "systemInstructions",
@@ -84,7 +84,7 @@
           "label": "Generate Management Meeting Minutes",
           "type": "generate",
           "fileName": "management-meeting-minutes.md",
-          "template": "# Management Meeting Minutes\n\n**Date and Time:** {{DATE}}\n\n**List of Attendees:** {{MANAGEMENT_MEMBERS}}\n\n## Agenda Items Discussed\n\n1. [Agenda Item 1 - To be filled based on meeting]\n2. [Agenda Item 2 - To be filled based on meeting]\n3. [Agenda Item 3 - To be filled based on meeting]\n4. [Agenda Item 4 - To be filled based on meeting]\n5. [Agenda Item 5 - To be filled based on meeting]\n\n## Decisions Made\n\n- [Decision 1: To be filled based on meeting discussion]\n- [Decision 2: To be filled based on meeting discussion]\n- [Decision 3: To be filled based on meeting discussion]\n\n## Action Items\n\n| Action Item | Owner | Due Date |\n|-------------|-------|----------|\n| [Action 1] | [Owner] | [Date] |\n| [Action 2] | [Owner] | [Date] |\n| [Action 3] | [Owner] | [Date] |\n\n---\n\n**Minutes Prepared By:** {{OWNER}}\n\n**Approved By:** {{OWNER}}",
+          "templateFile": "data/templates/management-meeting-minutes.md",
           "inputs": [
             {
               "key": "systemInstructions",
@@ -104,7 +104,7 @@
           "label": "Generate Organizational Chart doc",
           "type": "generate",
           "fileName": "organizational-chart.md",
-          "template": "# Organizational Chart\n\n**Approved by:** {{OWNER}}\n\n**Approval Date:** {{DATE}}\n\n## Purpose\n\nTo define management authorities and reporting hierarchy within the company.\n\n## Organizational Hierarchy (Job Titles Only)\n\n```\n                    ┌─────────────────┐\n                    │      CEO        │\n                    └────────┬────────┘\n                             │\n           ┌─────────────────┼─────────────────┐\n           │                 │                 │\n    ┌──────┴──────┐   ┌──────┴──────┐   ┌──────┴──────┐\n    │     CTO     │   │     COO     │   │     CFO     │\n    └──────┬──────┘   └──────┬──────┘   └──────┬──────┘\n           │                 │                 │\n    ┌──────┴──────┐   ┌──────┴──────┐   ┌──────┴──────┐\n    │  Engineering │   │  Operations │   │   Finance   │\n    │    Manager   │   │   Manager   │   │   Manager   │\n    └──────┬──────┘   └─────────────┘   └─────────────┘\n           │\n    ┌──────┴──────┐\n    │  Engineers  │\n    └─────────────┘\n```\n\n## Notes\n\n- This chart defines reporting relationships only.\n- Individual names are excluded for privacy.\n- Reviewed and approved annually or when significant organizational changes occur.\n\n---\n\n**Last Updated:** {{DATE}}"
+          "templateFile": "data/templates/organizational-chart.md"
         }
       ]
     },
@@ -151,7 +151,7 @@
           "label": "Generate Background Checks doc",
           "type": "generate",
           "fileName": "background-checks-process.md",
-          "template": "# Background Checks Process\n\nIn countries where **background checks are legal**, {{COMPANY_NAME}} will conduct a formal background check for all new hires before employment begins.\n\nIn countries where **background checks are not legally permitted** (such as **Israel**), {{COMPANY_NAME}} will instead conduct **at least one reference call** with a previous employer or colleague.\n\nDuring the reference call, we will ask about:\n\na. The candidate's **professional performance and reliability**\n\nb. The candidate's **teamwork, communication, and integrity**\n\n---\n\n**Document Owner:** {{OWNER}}\n\n**Last Updated:** {{DATE}}"
+          "templateFile": "data/templates/background-checks-process.md"
         }
       ]
     },
@@ -164,7 +164,7 @@
           "label": "Generate 'Access to new apps process' doc",
           "type": "generate",
           "fileName": "access-to-new-apps-process.md",
-          "template": "# Access to New Applications Process\n\n**Date:** {{DATE}}\n\n**Owner:** {{OWNER}}\n\n## Purpose\n\nTo ensure that employees receive access only to the systems and applications required for their role, following the principle of least privilege.\n\n## Process\n\n### 1. Onboarding\n\nDuring onboarding, the {{OWNER_TITLE}} reviews the employee's role and determines which applications (e.g., Slack, AWS, GitHub, Linear, Google Workspace) are required. The {{OWNER_TITLE}} or delegated admin grants only the necessary access.\n\n### 2. Requesting Additional Access\n\nIf new access is needed later, the employee sends a request via Slack message or email to the {{OWNER_TITLE}}.\n\n### 3. Review\n\nThe {{OWNER_TITLE}} reviews the request, ensuring it follows the **least privilege** and **need-to-know** principles.\n\n### 4. Approval and Documentation\n\nIf approved, the {{OWNER_TITLE}} grants access and documents the change.\n\n---\n\n**Last Updated:** {{DATE}}"
+          "templateFile": "data/templates/access-to-new-apps-process.md"
         }
       ]
     },
@@ -246,7 +246,7 @@
           "label": "Generate Risk Registry",
           "type": "generate",
           "fileName": "risk-registry.md",
-          "template": "# Risk Registry\n\n**Last Reviewed:** {{DATE}}\n\n**Owner:** {{OWNER}}\n\n## Risk Assessment Table\n\n| # | Risk Name | Description | Likelihood | Impact | Owner | Mitigation / Controls | Status | Last Reviewed |\n|---|-----------|-------------|------------|--------|-------|----------------------|--------|---------------|\n| 1 | Data Breach | Unauthorized access to customer data | Medium | High | Security Lead | Encryption, access controls, monitoring | Active | {{DATE}} |\n| 2 | System Downtime | Unplanned service outage | Low | High | Engineering Lead | Redundancy, backups, incident response | Active | {{DATE}} |\n| 3 | Insider Threat | Malicious or negligent employee actions | Low | High | HR Lead | Background checks, access reviews, training | Active | {{DATE}} |\n| 4 | Phishing Attack | Social engineering targeting employees | Medium | Medium | Security Lead | Security awareness training, email filtering | Active | {{DATE}} |\n| 5 | Third-Party Vendor Risk | Vendor security incident affecting us | Medium | Medium | Compliance Lead | Vendor assessments, contracts, monitoring | Active | {{DATE}} |\n| 6 | Ransomware | Malware encrypting critical systems | Low | Critical | Security Lead | Backups, endpoint protection, segmentation | Active | {{DATE}} |\n| 7 | Compliance Violation | Failure to meet regulatory requirements | Low | High | Compliance Lead | Audits, policies, training | Active | {{DATE}} |\n| 8 | Natural Disaster | Physical damage to infrastructure | Low | High | Operations Lead | Cloud hosting, geographic redundancy | Active | {{DATE}} |\n| 9 | Key Person Dependency | Loss of critical employee | Medium | Medium | HR Lead | Documentation, cross-training | Active | {{DATE}} |\n| 10 | API Security Vulnerability | Exploitable weakness in APIs | Medium | High | Engineering Lead | Security testing, code review, WAF | Active | {{DATE}} |\n| 11 | Inadequate Logging | Insufficient audit trail | Low | Medium | Security Lead | Centralized logging, retention policies | Active | {{DATE}} |\n| 12 | Weak Authentication | Password or MFA weaknesses | Low | High | Security Lead | MFA enforcement, password policies | Active | {{DATE}} |\n| 13 | Data Loss | Accidental deletion or corruption | Low | High | Engineering Lead | Backups, versioning, access controls | Active | {{DATE}} |\n| 14 | DDoS Attack | Denial of service targeting infrastructure | Medium | Medium | Engineering Lead | CDN, rate limiting, DDoS protection | Active | {{DATE}} |\n| 15 | Intellectual Property Theft | Unauthorized access to proprietary code | Low | High | Legal Lead | NDAs, access controls, monitoring | Active | {{DATE}} |\n\n## Risk Scoring Guide\n\n**Likelihood:** Low (unlikely) | Medium (possible) | High (likely)\n\n**Impact:** Low (minimal) | Medium (moderate) | High (significant) | Critical (severe)\n\n---\n\n**Next Review Date:** [Quarterly]\n\n**Approved By:** {{OWNER}}"
+          "templateFile": "data/templates/risk-registry.md"
         }
       ]
     },
