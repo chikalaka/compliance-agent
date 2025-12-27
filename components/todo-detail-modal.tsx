@@ -257,6 +257,13 @@ export function TodoDetailModal({
         if ((action.template || action.templateFile) && action.fileName) {
           setGeneratingAction(action.label)
           try {
+            // Get system instructions if provided
+            const systemInstructions = getInputValue(
+              actionIndex,
+              action,
+              "systemInstructions",
+            )
+
             const res = await fetch("/api/todos/generate-doc", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -264,6 +271,7 @@ export function TodoDetailModal({
                 template: action.template,
                 templateFile: action.templateFile,
                 fileName: action.fileName,
+                systemInstructions: systemInstructions || undefined,
               }),
             })
 

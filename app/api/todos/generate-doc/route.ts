@@ -43,7 +43,11 @@ async function loadAllComplianceData(): Promise<string> {
   }
 }
 
-function buildPrompt(template: string, companyContext: string): string {
+function buildPrompt(
+  template: string,
+  companyContext: string,
+  systemInstructions?: string,
+): string {
   const now = new Date()
   const dateStr = now.toLocaleDateString("en-US", {
     weekday: "long",
@@ -51,6 +55,10 @@ function buildPrompt(template: string, companyContext: string): string {
     month: "long",
     day: "numeric",
   })
+
+  const userInstructionsSection = systemInstructions
+    ? `\n## Additional Instructions from User\n${systemInstructions}\n`
+    : ""
 
   return `You are generating a compliance document for a company. Use the company context provided to fill in the template accurately and professionally.
 
@@ -71,7 +79,7 @@ ${template}
 5. For meeting minutes, create realistic but generic agenda items and action items
 6. For organizational charts, use the personnel information if available, otherwise create a reasonable startup structure
 7. Keep the tone professional and suitable for SOC 2 compliance documentation
-
+${userInstructionsSection}
 Output ONLY the filled document in markdown format, nothing else.`
 }
 
@@ -130,7 +138,7 @@ Output ONLY the customized document in markdown format. Preserve ALL original fo
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { template, templateFile, fileName } = body
+    const { template, templateFile, fileName, systemInstructions } = body
 
     if (!fileName) {
       return NextResponse.json({ error: "Missing fileName" }, { status: 400 })
@@ -173,7 +181,7 @@ export async function POST(request: NextRequest) {
     // Build the prompt - use conservative prompt for Section 3
     const prompt = isSection3Template
       ? buildSection3Prompt(templateContent, companyContext)
-      : buildPrompt(templateContent, companyContext)
+      : buildPrompt(templateContent, companyContext, systemInstructions)
 
     // Generate using LLM
     const { text } = await generateText({

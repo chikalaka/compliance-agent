@@ -39,7 +39,14 @@
           "label": "Generate Board Meeting Minutes",
           "type": "generate",
           "fileName": "board-meeting-minutes.md",
-          "template": "# Board Meeting Minutes\n\n**Date and Time:** {{DATE}}\n\n**List of Attendees:** {{BOARD_MEMBERS}}\n\n## Agenda Items Discussed\n\n1. **Financial Aspects** - Review of quarterly financial performance, budget status, and financial projections\n2. **HR** - Updates on hiring, team changes, and organizational matters\n3. **Pipeline of Clients** - Current sales pipeline, new opportunities, and client acquisition status\n4. **Support Issues Review** - Summary of customer support tickets, resolution rates, and outstanding issues\n5. **Discussion on Product and New Features** - Product roadmap updates, feature releases, and technical developments\n\n## Decisions Made\n\n- [Decision 1: To be filled based on meeting discussion]\n- [Decision 2: To be filled based on meeting discussion]\n- [Decision 3: To be filled based on meeting discussion]\n\n## Action Items\n\n| Action Item | Owner | Due Date |\n|-------------|-------|----------|\n| [Action 1] | [Owner] | [Date] |\n| [Action 2] | [Owner] | [Date] |\n| [Action 3] | [Owner] | [Date] |\n\n---\n\n**Minutes Prepared By:** {{OWNER}}\n\n**Approved By:** {{OWNER}}"
+          "template": "# Board Meeting Minutes\n\n**Date and Time:** {{DATE}}\n\n**List of Attendees:** {{BOARD_MEMBERS}}\n\n## Agenda Items Discussed\n\n1. **Financial Aspects** - Review of quarterly financial performance, budget status, and financial projections\n2. **HR** - Updates on hiring, team changes, and organizational matters\n3. **Pipeline of Clients** - Current sales pipeline, new opportunities, and client acquisition status\n4. **Support Issues Review** - Summary of customer support tickets, resolution rates, and outstanding issues\n5. **Discussion on Product and New Features** - Product roadmap updates, feature releases, and technical developments\n\n## Decisions Made\n\n- [Decision 1: To be filled based on meeting discussion]\n- [Decision 2: To be filled based on meeting discussion]\n- [Decision 3: To be filled based on meeting discussion]\n\n## Action Items\n\n| Action Item | Owner | Due Date |\n|-------------|-------|----------|\n| [Action 1] | [Owner] | [Date] |\n| [Action 2] | [Owner] | [Date] |\n| [Action 3] | [Owner] | [Date] |\n\n---\n\n**Minutes Prepared By:** {{OWNER}}\n\n**Approved By:** {{OWNER}}",
+          "inputs": [
+            {
+              "key": "systemInstructions",
+              "label": "System Instructions (optional)",
+              "defaultValue": ""
+            }
+          ]
         }
       ]
     },
@@ -77,7 +84,14 @@
           "label": "Generate Management Meeting Minutes",
           "type": "generate",
           "fileName": "management-meeting-minutes.md",
-          "template": "# Management Meeting Minutes\n\n**Date and Time:** {{DATE}}\n\n**List of Attendees:** {{MANAGEMENT_MEMBERS}}\n\n## Agenda Items Discussed\n\n1. [Agenda Item 1 - To be filled based on meeting]\n2. [Agenda Item 2 - To be filled based on meeting]\n3. [Agenda Item 3 - To be filled based on meeting]\n4. [Agenda Item 4 - To be filled based on meeting]\n5. [Agenda Item 5 - To be filled based on meeting]\n\n## Decisions Made\n\n- [Decision 1: To be filled based on meeting discussion]\n- [Decision 2: To be filled based on meeting discussion]\n- [Decision 3: To be filled based on meeting discussion]\n\n## Action Items\n\n| Action Item | Owner | Due Date |\n|-------------|-------|----------|\n| [Action 1] | [Owner] | [Date] |\n| [Action 2] | [Owner] | [Date] |\n| [Action 3] | [Owner] | [Date] |\n\n---\n\n**Minutes Prepared By:** {{OWNER}}\n\n**Approved By:** {{OWNER}}"
+          "template": "# Management Meeting Minutes\n\n**Date and Time:** {{DATE}}\n\n**List of Attendees:** {{MANAGEMENT_MEMBERS}}\n\n## Agenda Items Discussed\n\n1. [Agenda Item 1 - To be filled based on meeting]\n2. [Agenda Item 2 - To be filled based on meeting]\n3. [Agenda Item 3 - To be filled based on meeting]\n4. [Agenda Item 4 - To be filled based on meeting]\n5. [Agenda Item 5 - To be filled based on meeting]\n\n## Decisions Made\n\n- [Decision 1: To be filled based on meeting discussion]\n- [Decision 2: To be filled based on meeting discussion]\n- [Decision 3: To be filled based on meeting discussion]\n\n## Action Items\n\n| Action Item | Owner | Due Date |\n|-------------|-------|----------|\n| [Action 1] | [Owner] | [Date] |\n| [Action 2] | [Owner] | [Date] |\n| [Action 3] | [Owner] | [Date] |\n\n---\n\n**Minutes Prepared By:** {{OWNER}}\n\n**Approved By:** {{OWNER}}",
+          "inputs": [
+            {
+              "key": "systemInstructions",
+              "label": "System Instructions (optional)",
+              "defaultValue": ""
+            }
+          ]
         }
       ]
     },
