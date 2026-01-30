@@ -1,6 +1,7 @@
 import { chromium, Browser, BrowserContext } from "playwright"
 import * as fs from "fs"
 import * as path from "path"
+import { SessionStatus } from "@/types/browser-auth.types"
 
 const SESSION_ID = "compliance-agent-browser"
 const SESSIONS_DIR = ".sessions"
@@ -8,16 +9,6 @@ const SESSIONS_DIR = ".sessions"
 // Module-level state to hold the active auth browser session
 let activeBrowser: Browser | null = null
 let activeContext: BrowserContext | null = null
-
-export interface SessionStatus {
-  authenticated: boolean
-  services: {
-    github: boolean
-    linear: boolean
-    googleWorkspace: boolean
-    aws: boolean
-  }
-}
 
 export interface AuthBrowserOptions {
   timeout?: number // Max time to wait for auth (ms)

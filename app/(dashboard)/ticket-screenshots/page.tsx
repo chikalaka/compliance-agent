@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { SessionStatus } from "@/types/browser-auth.types"
 
 const STORAGE_KEY = "ticket-screenshots-config"
 
@@ -31,16 +32,6 @@ interface ScreenshotResult {
   error?: string
 }
 
-interface AuthStatus {
-  authenticated: boolean
-  services: {
-    github: boolean
-    linear: boolean
-    googleWorkspace: boolean
-    aws: boolean
-  }
-}
-
 export default function TicketScreenshotsPage() {
   const [repoName, setRepoName] = useState("")
   const [count, setCount] = useState(5)
@@ -51,7 +42,7 @@ export default function TicketScreenshotsPage() {
   const [isInitialized, setIsInitialized] = useState(false)
 
   // Auth state
-  const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null)
+  const [authStatus, setAuthStatus] = useState<SessionStatus | null>(null)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
@@ -60,7 +51,7 @@ export default function TicketScreenshotsPage() {
     try {
       const res = await fetch("/api/browser/status")
       if (res.ok) {
-        const status: AuthStatus = await res.json()
+        const status: SessionStatus = await res.json()
         setAuthStatus(status)
       }
     } catch (error) {
@@ -299,41 +290,6 @@ export default function TicketScreenshotsPage() {
                     )}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {isAuthenticated && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={checkAuthStatus}
-                    disabled={isCheckingAuth}
-                    className="text-emerald-700 hover:text-emerald-800 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                )}
-                <Button
-                  onClick={handleAuthenticate}
-                  disabled={isAuthenticating}
-                  variant={isAuthenticated ? "outline" : "default"}
-                  className={
-                    isAuthenticated
-                      ? ""
-                      : "bg-amber-600 hover:bg-amber-700 text-white"
-                  }
-                >
-                  {isAuthenticating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Authenticating...
-                    </>
-                  ) : (
-                    <>
-                      <KeyRound className="mr-2 h-4 w-4" />
-                      {isAuthenticated ? "Re-authenticate" : "Authenticate"}
-                    </>
-                  )}
-                </Button>
               </div>
             </div>
           </CardContent>

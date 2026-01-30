@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
+import { Todo } from "@/types/action.types"
 
 const CUSTOM_FILE = path.join(
   process.cwd(),
@@ -9,33 +10,6 @@ const CUSTOM_FILE = path.join(
   "custom-todos.json",
 )
 const TEMPLATE_FILE = path.join(process.cwd(), "data", "todos", "template.json")
-
-interface ActionInput {
-  key: string
-  label: string
-  defaultValue: string
-}
-
-interface TodoAction {
-  label: string
-  type: "url" | "route" | "generate" | "capture"
-  url?: string
-  route?: string
-  template?: string
-  templateFile?: string
-  fileName?: string
-  defaultPrompt?: string
-  calendarSearch?: string
-  fileNamePrefix?: string
-  inputs?: ActionInput[]
-}
-
-interface Todo {
-  id: string
-  title: string
-  description: string
-  actions?: TodoAction[]
-}
 
 interface TodosData {
   todos: Todo[]

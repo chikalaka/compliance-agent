@@ -8,28 +8,9 @@ import { RefreshCw, Loader2, ListChecks, StickyNote } from "lucide-react"
 import { toast } from "sonner"
 import { TodoDetailModal } from "@/components/todo-detail-modal"
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { TodoAction } from "@/types/action.types"
 
 type TodoStatus = "todo" | "wip" | "done"
-
-interface ActionInput {
-  key: string
-  label: string
-  defaultValue: string
-}
-
-interface TodoAction {
-  label: string
-  type: "url" | "route" | "generate" | "capture" | "copyTemplate"
-  url?: string
-  route?: string
-  template?: string
-  templateFile?: string
-  fileName?: string
-  defaultPrompt?: string
-  calendarSearch?: string
-  fileNamePrefix?: string
-  inputs?: ActionInput[]
-}
 
 interface OngoingTodo {
   id: string

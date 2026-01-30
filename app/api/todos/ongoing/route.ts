@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
+import { TodoAction } from "@/types/action.types"
 
 const ONGOING_FILE = path.join(
   process.cwd(),
@@ -16,26 +17,6 @@ const CUSTOM_FILE = path.join(
 )
 
 type TodoStatus = "todo" | "wip" | "done"
-
-interface ActionInput {
-  key: string
-  label: string
-  defaultValue: string
-}
-
-interface TodoAction {
-  label: string
-  type: "url" | "route" | "generate" | "capture"
-  url?: string
-  route?: string
-  template?: string
-  templateFile?: string
-  fileName?: string
-  defaultPrompt?: string
-  calendarSearch?: string
-  fileNamePrefix?: string
-  inputs?: ActionInput[]
-}
 
 interface OngoingTodo {
   id: string

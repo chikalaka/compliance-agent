@@ -10,7 +10,7 @@ export interface ScreenshotConfig {
   linearCompanyName: string
 }
 
-export interface ScreenshotResult {
+interface ScreenshotResult {
   ticketId: string
   prUrl: string
   linearUrl: string

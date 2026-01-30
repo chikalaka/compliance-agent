@@ -38,30 +38,9 @@ import {
   Copy,
 } from "lucide-react"
 import { toast } from "sonner"
+import { TodoAction } from "@/types/action.types"
 
 type TodoStatus = "todo" | "wip" | "done"
-
-interface ActionInput {
-  key: string
-  label: string
-  defaultValue: string
-}
-
-interface TodoAction {
-  label: string
-  type: "url" | "route" | "generate" | "capture" | "copyTemplate"
-  url?: string
-  route?: string
-  template?: string
-  templateFile?: string
-  fileName?: string
-  defaultPrompt?: string
-  // Calendar capture fields
-  calendarSearch?: string
-  fileNamePrefix?: string
-  // Configurable inputs
-  inputs?: ActionInput[]
-}
 
 interface BaseTodo {
   id: string

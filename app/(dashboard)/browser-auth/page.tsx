@@ -17,19 +17,10 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
-
-interface AuthStatus {
-  authenticated: boolean
-  services: {
-    github: boolean
-    linear: boolean
-    googleWorkspace: boolean
-    aws: boolean
-  }
-}
+import { SessionStatus } from "@/types/browser-auth.types"
 
 interface ServiceConfig {
-  id: keyof AuthStatus["services"]
+  id: keyof SessionStatus["services"]
   name: string
   description: string
   icon: React.ComponentType<{ className?: string }>
@@ -68,7 +59,7 @@ const services: ServiceConfig[] = [
 ]
 
 export default function BrowserAuthPage() {
-  const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null)
+  const [authStatus, setAuthStatus] = useState<SessionStatus | null>(null)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [isBrowserOpen, setIsBrowserOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -78,7 +69,7 @@ export default function BrowserAuthPage() {
     try {
       const res = await fetch("/api/browser/status")
       if (res.ok) {
-        const status: AuthStatus = await res.json()
+        const status: SessionStatus = await res.json()
         setAuthStatus(status)
       }
     } catch (error) {
@@ -219,8 +210,8 @@ export default function BrowserAuthPage() {
                 {connectedCount === totalCount
                   ? "All services are authenticated"
                   : connectedCount > 0
-                  ? "Some services need authentication"
-                  : "No services authenticated yet"}
+                    ? "Some services need authentication"
+                    : "No services authenticated yet"}
               </p>
             </div>
           </div>

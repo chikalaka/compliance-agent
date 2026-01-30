@@ -10,33 +10,7 @@ import { Pencil, Trash2, Plus, Download, Loader2, ListTodo } from "lucide-react"
 import { toast } from "sonner"
 import { TodoDetailModal } from "@/components/todo-detail-modal"
 import { ConfirmDialog } from "@/components/confirm-dialog"
-
-interface ActionInput {
-  key: string
-  label: string
-  defaultValue: string
-}
-
-interface TodoAction {
-  label: string
-  type: "url" | "route" | "generate" | "capture" | "copyTemplate"
-  url?: string
-  route?: string
-  template?: string
-  templateFile?: string
-  fileName?: string
-  defaultPrompt?: string
-  calendarSearch?: string
-  fileNamePrefix?: string
-  inputs?: ActionInput[]
-}
-
-interface Todo {
-  id: string
-  title: string
-  description: string
-  actions?: TodoAction[]
-}
+import { Todo } from "@/types/action.types"
 
 // Helper to check if a task is user-created (editable) vs template-derived
 const isCustomTask = (id: string) => id.startsWith("custom-")
