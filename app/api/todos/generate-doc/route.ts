@@ -83,6 +83,40 @@ ${userInstructionsSection}
 Output ONLY the filled document in markdown format, nothing else.`
 }
 
+function buildPromptBasedGeneration(
+  userPrompt: string,
+  companyContext: string,
+): string {
+  const now = new Date()
+  const dateStr = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
+  return `You are generating a compliance document for a company based on the user's request. Use the company context provided to create an accurate and professional document.
+
+## Current Date
+${dateStr}
+
+## Company Context
+${companyContext}
+
+## User Request
+${userPrompt}
+
+## Instructions
+1. Generate a professional compliance document based on the user's request
+2. Use the company context to fill in company-specific details (company name, personnel, structure, etc.)
+3. Use markdown formatting for the document
+4. If specific information is not available in the company context, use reasonable professional defaults
+5. Keep the tone professional and suitable for SOC 2 compliance documentation
+6. Create realistic and comprehensive content that would satisfy compliance requirements
+
+Output ONLY the generated document in markdown format, nothing else.`
+}
+
 function buildSection3Prompt(template: string, companyContext: string): string {
   const now = new Date()
   const dateStr = now.toLocaleDateString("en-US", {
@@ -138,15 +172,16 @@ Output ONLY the customized document in markdown format. Preserve ALL original fo
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { template, templateFile, fileName, systemInstructions } = body
+    const { template, templateFile, fileName, systemInstructions, prompt } =
+      body
 
     if (!fileName) {
       return NextResponse.json({ error: "Missing fileName" }, { status: 400 })
     }
 
-    if (!template && !templateFile) {
+    if (!template && !templateFile && !prompt) {
       return NextResponse.json(
-        { error: "Missing template or templateFile" },
+        { error: "Missing template, templateFile, or prompt" },
         { status: 400 },
       )
     }
@@ -154,39 +189,47 @@ export async function POST(request: NextRequest) {
     // Ensure the documents directory exists
     await fs.mkdir(DOCUMENTS_DIR, { recursive: true })
 
-    // Get template content - either from file or directly provided
-    let templateContent: string
-    let isSection3Template = false
-
-    if (templateFile) {
-      // Read template from file
-      const templatePath = path.join(process.cwd(), templateFile)
-      try {
-        templateContent = await fs.readFile(templatePath, "utf-8")
-        // Check if this is the Section 3 template (use conservative prompt)
-        isSection3Template = templateFile.includes("soc-2-section-3")
-      } catch {
-        return NextResponse.json(
-          { error: `Template file not found: ${templateFile}` },
-          { status: 404 },
-        )
-      }
-    } else {
-      templateContent = template
-    }
-
     // Load all company context from compliance data
     const companyContext = await loadAllComplianceData()
 
-    // Build the prompt - use conservative prompt for Section 3
-    const prompt = isSection3Template
-      ? buildSection3Prompt(templateContent, companyContext)
-      : buildPrompt(templateContent, companyContext, systemInstructions)
+    let generationPrompt: string
+
+    // Check if this is a prompt-based generation (no template)
+    if (prompt && !template && !templateFile) {
+      // Prompt-based generation
+      generationPrompt = buildPromptBasedGeneration(prompt, companyContext)
+    } else {
+      // Template-based generation
+      let templateContent: string
+      let isSection3Template = false
+
+      if (templateFile) {
+        // Read template from file
+        const templatePath = path.join(process.cwd(), templateFile)
+        try {
+          templateContent = await fs.readFile(templatePath, "utf-8")
+          // Check if this is the Section 3 template (use conservative prompt)
+          isSection3Template = templateFile.includes("soc-2-section-3")
+        } catch {
+          return NextResponse.json(
+            { error: `Template file not found: ${templateFile}` },
+            { status: 404 },
+          )
+        }
+      } else {
+        templateContent = template
+      }
+
+      // Build the prompt - use conservative prompt for Section 3
+      generationPrompt = isSection3Template
+        ? buildSection3Prompt(templateContent, companyContext)
+        : buildPrompt(templateContent, companyContext, systemInstructions)
+    }
 
     // Generate using LLM
     const { text } = await generateText({
       model: openai("gpt-4o-mini"),
-      prompt,
+      prompt: generationPrompt,
     })
 
     // Write the document

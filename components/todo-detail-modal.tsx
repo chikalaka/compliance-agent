@@ -35,6 +35,7 @@ import {
   Camera,
   Calendar,
   Search,
+  Copy,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -48,12 +49,13 @@ interface ActionInput {
 
 interface TodoAction {
   label: string
-  type: "url" | "route" | "generate" | "capture"
+  type: "url" | "route" | "generate" | "capture" | "copyTemplate"
   url?: string
   route?: string
   template?: string
   templateFile?: string
   fileName?: string
+  defaultPrompt?: string
   // Calendar capture fields
   calendarSearch?: string
   fileNamePrefix?: string
@@ -121,6 +123,10 @@ export function TodoDetailModal({
   const [actionInputValues, setActionInputValues] = useState<
     Record<string, Record<string, string>>
   >({})
+  // State for prompt values
+  const [actionPromptValues, setActionPromptValues] = useState<
+    Record<string, string>
+  >({})
 
   const ongoingTodo = todo as OngoingTodo | null
 
@@ -135,6 +141,7 @@ export function TodoDetailModal({
       }
       // Initialize action input values from defaults
       const initialInputValues: Record<string, Record<string, string>> = {}
+      const initialPromptValues: Record<string, string> = {}
       todo.actions?.forEach((action, index) => {
         if (action.inputs && action.inputs.length > 0) {
           const actionKey = `${index}-${action.label}`
@@ -143,13 +150,20 @@ export function TodoDetailModal({
             initialInputValues[actionKey][input.key] = input.defaultValue
           })
         }
+        // Initialize prompt values for actions with defaultPrompt
+        if (action.defaultPrompt) {
+          const actionKey = `${index}-${action.label}`
+          initialPromptValues[actionKey] = action.defaultPrompt
+        }
       })
       setActionInputValues(initialInputValues)
+      setActionPromptValues(initialPromptValues)
     } else {
       setTitle("")
       setDescription("")
       setNotes([])
       setActionInputValues({})
+      setActionPromptValues({})
     }
     setNewNote("")
     setGeneratedActions(new Set())
@@ -186,6 +200,25 @@ export function TodoDetailModal({
         ...prev[actionKey],
         [inputKey]: value,
       },
+    }))
+  }
+
+  // Helper to get prompt value for an action
+  const getPromptValue = (actionIndex: number, action: TodoAction) => {
+    const actionKey = getActionKey(actionIndex, action.label)
+    return actionPromptValues[actionKey] ?? action.defaultPrompt ?? ""
+  }
+
+  // Helper to set prompt value for an action
+  const setPromptValue = (
+    actionIndex: number,
+    action: TodoAction,
+    value: string,
+  ) => {
+    const actionKey = getActionKey(actionIndex, action.label)
+    setActionPromptValues((prev) => ({
+      ...prev,
+      [actionKey]: value,
     }))
   }
 
@@ -254,7 +287,10 @@ export function TodoDetailModal({
         }
         break
       case "generate":
-        if ((action.template || action.templateFile) && action.fileName) {
+        if (
+          (action.template || action.templateFile || action.defaultPrompt) &&
+          action.fileName
+        ) {
           setGeneratingAction(action.label)
           try {
             // Get system instructions if provided
@@ -264,6 +300,11 @@ export function TodoDetailModal({
               "systemInstructions",
             )
 
+            // Get prompt value if this is a prompt-based action
+            const promptValue = action.defaultPrompt
+              ? getPromptValue(actionIndex, action)
+              : undefined
+
             const res = await fetch("/api/todos/generate-doc", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -271,6 +312,7 @@ export function TodoDetailModal({
                 template: action.template,
                 templateFile: action.templateFile,
                 fileName: action.fileName,
+                prompt: promptValue,
                 systemInstructions: systemInstructions || undefined,
               }),
             })
@@ -286,6 +328,35 @@ export function TodoDetailModal({
           } catch (error) {
             console.error("Failed to generate document:", error)
             toast.error("Failed to generate document")
+          } finally {
+            setGeneratingAction(null)
+          }
+        }
+        break
+      case "copyTemplate":
+        if (action.templateFile && action.fileName) {
+          setGeneratingAction(action.label)
+          try {
+            const res = await fetch("/api/todos/copy-template", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                templateFile: action.templateFile,
+                fileName: action.fileName,
+              }),
+            })
+
+            if (res.ok) {
+              const data = await res.json()
+              setGeneratedActions((prev) => new Set(prev).add(action.label))
+              toast.success(`Template copied: ${data.fileName}`)
+            } else {
+              const error = await res.json()
+              toast.error(error.message || "Failed to copy template")
+            }
+          } catch (error) {
+            console.error("Failed to copy template:", error)
+            toast.error("Failed to copy template")
           } finally {
             setGeneratingAction(null)
           }
@@ -377,6 +448,8 @@ export function TodoDetailModal({
         return <Sparkles className="h-4 w-4" />
       case "capture":
         return <Camera className="h-4 w-4" />
+      case "copyTemplate":
+        return <Copy className="h-4 w-4" />
     }
   }
 
@@ -391,8 +464,8 @@ export function TodoDetailModal({
             {mode === "view"
               ? "Task Details"
               : mode === "edit"
-              ? "Edit Task"
-              : "Task Progress"}
+                ? "Edit Task"
+                : "Task Progress"}
           </DialogTitle>
           <DialogDescription>
             {mode === "view" && "View the details of this task."}
@@ -444,7 +517,7 @@ export function TodoDetailModal({
               <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
                 Description
               </p>
-              <p className="text-sm text-zinc-700 dark:text-zinc-300">
+              <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
                 {todo?.description || "No description provided."}
               </p>
             </div>
@@ -459,6 +532,11 @@ export function TodoDetailModal({
               <div className="flex flex-col gap-3">
                 {todo?.actions?.map((action, index) => {
                   const hasInputs = action.inputs && action.inputs.length > 0
+                  const hasPrompt =
+                    action.type === "generate" &&
+                    action.defaultPrompt &&
+                    !action.template &&
+                    !action.templateFile
                   const isCalendarCapture =
                     action.type === "capture" && action.calendarSearch
                   const isLoading = generatingAction === action.label
@@ -496,6 +574,47 @@ export function TodoDetailModal({
                             />
                           </div>
                         ))}
+
+                        {/* Action Button */}
+                        <Button
+                          variant="default"
+                          className="w-full justify-center gap-2 h-auto py-2.5 bg-amber-600 hover:bg-amber-700 text-white"
+                          onClick={() => handleActionClick(action, index)}
+                          disabled={isLoading}
+                        >
+                          {getActionIcon(action)}
+                          <span>{action.label}</span>
+                          {generatedActions.has(action.label) && (
+                            <Badge className="bg-white/20 text-white text-xs ml-1">
+                              Done
+                            </Badge>
+                          )}
+                        </Button>
+                      </div>
+                    )
+                  }
+
+                  // Actions with prompts get wrapped in a card-like container
+                  if (hasPrompt) {
+                    return (
+                      <div
+                        key={index}
+                        className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/30 p-3 space-y-3"
+                      >
+                        {/* Prompt field */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                            Prompt
+                          </label>
+                          <Textarea
+                            value={getPromptValue(index, action)}
+                            onChange={(e) =>
+                              setPromptValue(index, action, e.target.value)
+                            }
+                            className="text-sm bg-white dark:bg-zinc-800 min-h-[80px]"
+                            placeholder={action.defaultPrompt}
+                          />
+                        </div>
 
                         {/* Action Button */}
                         <Button

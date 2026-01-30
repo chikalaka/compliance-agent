@@ -225,6 +225,24 @@
       ]
     },
     {
+      "id": "15",
+      "title": "Provide an annual employee feedback template",
+      "description": "Provide an annual employee feedback template that is signed by employees and contractors.",
+      "actions": [
+        {
+          "label": "Generate annual employee feedback template",
+          "type": "generate",
+          "fileName": "annual-employee-feedback-template.md",
+          "templateFile": "data/templates/annual-employee-feedback-template.md"
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "title": "Provide a DRP and screenshots showing it in practice",
+      "description": "Provide a Disaster Recovery Plan (DRP) that shows the process of how you recover from a disaster. The screenshots show that you actually recovered from a disaster."
+    },
+    {
       "id": "17_18_19",
       "title": "Provide Risk Registry + screenshot of calendar invite + meeting minutes",
       "description": "A risk registry documents identified risks, their likelihood, impact, and mitigation strategies. Include evidence of regular risk review meetings.",
@@ -249,6 +267,196 @@
           "templateFile": "data/templates/risk-registry.md"
         }
       ]
+    },
+    {
+      "id": "20",
+      "title": "Vendor Risk Assessment",
+      "description": "Provide a vendor risk assessment that shows the risk of each vendor. The assessment should include the vendor's name, product, type (usage), basis of processing, started using, stopped using, dedicated service account/email, confidentiality, integrity, stored sensitive data, availability, risk level, country, website, contact, GDPR/privacy statement, security statement, compliance, and SOC-2 report reviewed.",
+      "actions": [
+        {
+          "label": "Generate Vendor Risk Assessment",
+          "type": "generate",
+          "fileName": "vendor-risk-assessment.md",
+          "templateFile": "data/templates/vendor-risk-assessment.md"
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "title": "Vendor Management Policy",
+      "description": "Provide a vendor management policy that shows the process of how you manage vendors. The policy should include the process of how you terminate vendors.",
+      "actions": [
+        {
+          "label": "Generate Vendor Management Policy",
+          "type": "generate",
+          "fileName": "vendor-management-policy.md",
+          "templateFile": "data/templates/vendor-management-policy.md"
+        }
+      ]
+    },
+    {
+      "id": "23_24",
+      "title": "Monitoring Tools & Alerts",
+      "description": "Provide screenshots of monitoring tools and alerts."
+    },
+    {
+      "id": "25",
+      "title": "Passwords Policy & MFA",
+      "description": "Provide screenshots of all MFA for production and deployment tools (GitHub, Cloudflare, AWS, etc.). Provide screenshots of the password policy of MDM, SSO, etc."
+    },
+    {
+      "id": "26",
+      "title": "Production MFA & Users",
+      "description": "Provide screenshots of all MFA for production tools (Cloudflare, AWS, etc.) and users."
+    },
+    {
+      "id": "27",
+      "title": "Deployment MFA & Users",
+      "description": "Provide screenshots of all MFA for deployment tools (GitHub, etc.) and users."
+    },
+    {
+      "id": "28",
+      "title": "Employee Offboarding Checklist",
+      "description": "Provide a screenshot/checklist of all the steps to offboard an employee. The checklist should include the steps to offboard an employee from all tools (GitHub, Cloudflare, AWS, etc.).",
+      "actions": [
+        {
+          "label": "Create Employee Offboarding Checklist",
+          "type": "copyTemplate",
+          "fileName": "employee-offboarding-checklist.md",
+          "templateFile": "data/templates/employee-offboarding-checklist.md"
+        }
+      ]
+    },
+    {
+      "id": "29",
+      "title": "Developer Production Access & Audit Logs",
+      "description": "Provide screenshots of all production access and audit logs. E.g. list of users in Cloudflare, AWS. etc. + audit logs."
+    },
+    {
+      "id": "30",
+      "title": "Architecture Design Document",
+      "description": "Provide a architecture design document."
+    },
+    {
+      "id": "31",
+      "title": "Source Control Access",
+      "description": "Provide a screenshot of users and MFA (as in #27)"
+    },
+    {
+      "id": "32",
+      "title": "RBAC Document",
+      "description": "Provide a RBAC document.",
+      "actions": [
+        {
+          "label": "Generate RBAC Document",
+          "type": "generate",
+          "fileName": "rbac-document.md",
+          "defaultPrompt": "Generate a comprehensive RBAC Document."
+        }
+      ]
+    },
+    {
+      "id": "33",
+      "title": "Employee Access Review",
+      "description": "Provide screenshots of the employee list for important systems (prod/deployemnt/Slack/Notion/etc.). Provide A table of all employees and their access to ALL systems.",
+      "actions": [
+        {
+          "label": "Generate Employee Access Review",
+          "type": "generate",
+          "fileName": "employee-access-review.md",
+          "templateFile": "data/templates/employee-access-review.md"
+        }
+      ]
+    },
+    {
+      "id": "34_35",
+      "title": "Physical Access Policy",
+      "description": "Provide the physical access policy."
+    },
+    {
+      "id": "36",
+      "title": "AWS SOC 2 Review",
+      "description": "Download the latest AWS SOC 2 review report. Go to 'Complementary User Entity Controls' and copy all the CC[X.Y] from the report into the action's prompt. If you're not using AWS just change the file name and some of the prompt.",
+      "actions": [
+        {
+          "label": "Generate AWS SOC 2 Review",
+          "type": "generate",
+          "fileName": "aws-soc-2-review.md",
+          "defaultPrompt": "From the provided list of SOC 2 report CC[x.y] - generate a table.\nColumns: #, AWS CUEC Description, Process Description\n# - the user entity control\nAWS CUEC Description - the AWS description from the report\nProcess Description - the company process description\n\nComplementary User Entity Controls:\n{{Paste the list here}}"
+        }
+      ]
+    },
+    {
+      "id": "37",
+      "title": "Firewall Configuration",
+      "description": "Provide a screenshot of the firewall configuration. E.g. WAF or anything else."
+    },
+    {
+      "id": "39",
+      "title": "Vulnerability Scanning",
+      "description": "Provde screenshots of the vulnerability scanning results. Provide a ticket resolving a vulnerability."
+    },
+    {
+      "id": "40",
+      "title": "PenTest Report",
+      "description": "Provide the PenTest report."
+    },
+    {
+      "id": "41",
+      "title": "Antivirus Management",
+      "description": "Provide screenshots of the antivirus management policy (or MDM)"
+    },
+    {
+      "id": "42",
+      "title": "Incident Response",
+      "description": "- Provide a screenshot of an incident (ticket)\n- Provide the Incident Management Policy\n- Provide a Root Cause Analysis (RCA) - Date, Owner, Incident ticket number, Description, Root Cause, Fix Applied, Prevention (optional)"
+    },
+    {
+      "id": "43",
+      "title": "Change Management",
+      "description": "- Provide the Change Management Policy\n- Provide the Software Development Life Cycle (SDLC)"
+    },
+    {
+      "id": "44_45_46_48",
+      "title": "Change Approval Process",
+      "description": "- Provide branch protection rules for every production and deployment repo\n- Provide screenshots of tickets and related merged PRs",
+      "actions": [
+        {
+          "label": "Go to Ticket Screenshots",
+          "type": "route",
+          "route": "/ticket-screenshots"
+        }
+      ]
+    },
+    {
+      "id": "47",
+      "title": "Deployment Authorization",
+      "description": "Provide screenshots of users of deployment tools (GitHub, etc.) - the same ones as in #27"
+    },
+    {
+      "id": "49",
+      "title": "Test Status Requirements",
+      "description": "Provide screenshots of the test status requirements. E.g. github.com/{org}/{repo}/settings/rules/{ruleId}"
+    },
+    {
+      "id": "54",
+      "title": "Password Encryption in DB",
+      "description": "Provide screenshot of the DB data that is encrypted."
+    },
+    {
+      "id": "55",
+      "title": "SSL Certificate",
+      "description": "Provide screenshot of the SSL certificate."
+    },
+    {
+      "id": "56",
+      "title": "Confidentiality Contracts",
+      "description": "Provide screenshots of some confidentiality contracts (just the beginning and the end of the contract)."
+    },
+    {
+      "id": "57",
+      "title": "Data Disposal",
+      "description": "- Provide screenshots of the full process of how a user deletes their data.\n- Provide the Data Classification and Protection Policy.\n- Provdide the Data Deletion Policy."
     },
     {
       "id": "section-3",

@@ -92,7 +92,7 @@ export const policies: Policy[] = [
   },
   {
     id: "software-development-lifecycle",
-    name: "Software Development Lifecycle (SDLC))",
+    name: "Software Development Lifecycle (SDLC)",
     fileName: "software-development-lifecycle.md",
   },
 ]

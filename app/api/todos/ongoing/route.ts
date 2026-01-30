@@ -31,6 +31,7 @@ interface TodoAction {
   template?: string
   templateFile?: string
   fileName?: string
+  defaultPrompt?: string
   calendarSearch?: string
   fileNamePrefix?: string
   inputs?: ActionInput[]

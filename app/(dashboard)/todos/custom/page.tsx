@@ -19,12 +19,13 @@ interface ActionInput {
 
 interface TodoAction {
   label: string
-  type: "url" | "route" | "generate" | "capture"
+  type: "url" | "route" | "generate" | "capture" | "copyTemplate"
   url?: string
   route?: string
   template?: string
   templateFile?: string
   fileName?: string
+  defaultPrompt?: string
   calendarSearch?: string
   fileNamePrefix?: string
   inputs?: ActionInput[]
