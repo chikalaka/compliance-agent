@@ -36,6 +36,7 @@ import {
   Calendar,
   Search,
   Copy,
+  FolderPlus,
 } from "lucide-react"
 import { toast } from "sonner"
 import { TodoAction } from "@/types/action.types"
@@ -408,6 +409,51 @@ export function TodoDetailModal({
           setGeneratingAction(null)
         }
         break
+      case "script":
+        setGeneratingAction(action.label)
+        try {
+          const folderUrl = getInputValue(actionIndex, action, "folderUrl")
+
+          if (!folderUrl || !folderUrl.trim()) {
+            toast.error("Please provide a Google Drive folder URL")
+            break
+          }
+
+          const res = await fetch("/api/scripts/create-folders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ folderUrl: folderUrl.trim() }),
+          })
+
+          if (res.ok) {
+            const data = await res.json()
+            setGeneratedActions((prev) => new Set(prev).add(action.label))
+            toast.success(
+              data.message ||
+                `Created ${data.totalCreated} folders${
+                  data.totalFailed > 0
+                    ? ` (${data.totalFailed} failed/skipped)`
+                    : ""
+                }`,
+            )
+          } else {
+            const error = await res.json()
+            if (res.status === 401) {
+              toast.error(
+                "Google authentication required. Please authenticate via Browser Auth page.",
+              )
+            } else {
+              toast.error(error.message || "Failed to create folders")
+            }
+          }
+        } catch (error) {
+          console.error("Failed to create folders:", error)
+          toast.error("Failed to create folders")
+        } finally {
+          setGeneratingAction(null)
+        }
+
+        break
     }
   }
 
@@ -429,6 +475,8 @@ export function TodoDetailModal({
         return <Camera className="h-4 w-4" />
       case "copyTemplate":
         return <Copy className="h-4 w-4" />
+      case "script":
+        return <FolderPlus className="h-4 w-4" />
     }
   }
 

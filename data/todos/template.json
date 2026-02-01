@@ -2,13 +2,26 @@
   "todos": [
     {
       "id": "00",
-      "title": "Create a Google Drive folder",
-      "description": "This would be shared with the SOC 2 auditors. Inside this main folder, later on, will be 58 folders (preferably name them 01 - 58) that will contain the evidence for each control."
+      "title": "Create a Google Drive folder subfolders",
+      "description": "This would be shared with the SOC 2 auditors. Inside this main folder, later on, will be 58 folders (preferably name them 01 - 58) that will contain the evidence for each control.",
+      "actions": [
+        {
+          "label": "Create subfolders automatically",
+          "type": "script",
+          "inputs": [
+            {
+              "key": "folderUrl",
+              "label": "Google Drive Folder URL",
+              "defaultValue": "https://drive.google.com/drive/u/1/folders/"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "01",
-      "title": "Provide screenshots of quarterly Board Meeting calendar invites + meeting minutes",
-      "description": "Quarterly board meetings are required for SOC 2 compliance. You need calendar invites and meeting minutes as evidence.",
+      "title": "Quarterly Board Meeting",
+      "description": "Provide screenshots of quarterly Board Meeting calendar invites + meeting minutes",
       "actions": [
         {
           "label": "Generate a quarterly Board Meeting invite",
@@ -52,8 +65,8 @@
     },
     {
       "id": "02",
-      "title": "Provide screenshots of quarterly Management Meeting calendar invites + meeting minutes",
-      "description": "Quarterly management meetings are required for SOC 2 compliance. You need calendar invites and meeting minutes as evidence.",
+      "title": "Quarterly Management Meeting",
+      "description": "Provide screenshots of quarterly Management Meeting calendar invites + meeting minutes",
       "actions": [
         {
           "label": "Generate a quarterly Management Meeting invite",
@@ -97,8 +110,8 @@
     },
     {
       "id": "03",
-      "title": "Provide Organizational Chart",
-      "description": "An organizational chart showing the company hierarchy and reporting structure is required for SOC 2 compliance.",
+      "title": "Organizational Chart",
+      "description": "An organizational chart showing the company hierarchy and reporting structure",
       "actions": [
         {
           "label": "Generate Organizational Chart doc",
@@ -110,8 +123,8 @@
     },
     {
       "id": "04",
-      "title": "Provide screenshot/s of product description",
-      "description": "This can be the company public website, public docs or anything else public. Screenshots should show what your product does and its key features.",
+      "title": "Product Description",
+      "description": "Provide screenshot/s of product description. This can be the company public website, public docs or anything else public. Screenshots should show what your product does and its key features.",
       "actions": [
         {
           "label": "Capture product website screenshot",
@@ -123,8 +136,8 @@
     },
     {
       "id": "05",
-      "title": "Provide all company policies + Management calendar invite for review + screenshot that all company have access",
-      "description": "You can generate policies one by one under 'Actions/Generate Policies'. Make sure to also provide evidence of a management review meeting and that all employees have access to these policies.",
+      "title": "Company Policies",
+      "description": "Provide all company policies + Management calendar invite for review + screenshot that all company have access. You can generate policies one by one under 'Actions/Generate Policies'. Make sure to also provide evidence of a management review meeting and that all employees have access to these policies.",
       "actions": [
         {
           "label": "Go to Generate Policies",
@@ -135,17 +148,18 @@
     },
     {
       "id": "06",
-      "title": "Provide an Information Security Policy"
+      "title": "Information Security Policy",
+      "description": "Provide the Information Security Policy"
     },
     {
       "id": "07",
-      "title": "Provide a doc explaining where are you posting job descriptions + example of one job description",
-      "description": "Document where job postings are published (LinkedIn, company website, job boards, etc.) and include an example of a job description used for hiring."
+      "title": "Job Postings",
+      "description": "Provide a doc explaining where are you posting job descriptions + example of one job description. Document where job postings are published (LinkedIn, company website, job boards, etc.) and include an example of a job description used for hiring."
     },
     {
       "id": "08",
-      "title": "Provide Background Checks Process",
-      "description": "Document your background checks process for new hires. Different countries have different legal requirements.",
+      "title": "Background Checks Process",
+      "description": "Provide Background Checks Process. Document your background checks process for new hires. Different countries have different legal requirements.",
       "actions": [
         {
           "label": "Generate Background Checks doc",
@@ -157,8 +171,8 @@
     },
     {
       "id": "09",
-      "title": "Provide Employee Onboarding process + screenshots of signatures",
-      "description": "Provide a doc that shows the process of how new employees get access to applications. The screenshots show that they actually completed the process.",
+      "title": "Employee Onboarding",
+      "description": "Provide Employee Onboarding process + screenshots of signatures. Provide a doc that shows the process of how new employees get access to applications. The screenshots show that they actually completed the process.",
       "actions": [
         {
           "label": "Generate 'Access to new apps process' doc",
@@ -170,13 +184,13 @@
     },
     {
       "id": "10",
-      "title": "Provide an NDA template",
-      "description": "Provide your company's Non-Disclosure Agreement template that is signed by employees and contractors."
+      "title": "NDA template",
+      "description": "Provide an NDA template. Provide your company's Non-Disclosure Agreement template that is signed by employees and contractors."
     },
     {
       "id": "11",
-      "title": "Provide Security Awareness Training materials + screenshots of signatures saying they read it",
-      "description": "Provide security awareness training materials and evidence that employees have completed the training.",
+      "title": "Security Awareness Training",
+      "description": "Provide Security Awareness Training materials + screenshots of signatures saying they read it. Provide security awareness training materials and evidence that employees have completed the training.",
       "actions": [
         {
           "label": "Download Security Awareness Training PDF",
@@ -187,8 +201,8 @@
     },
     {
       "id": "12",
-      "title": "Provide Technical Training Resources + screenshots of signatures saying they read it",
-      "description": "These resources are for your employees. Provide technical training materials relevant to your stack and evidence of completion.",
+      "title": "Technical Training Resources",
+      "description": "Provide Technical Training Resources + screenshots of signatures saying they read it. These resources are for your employees. Provide technical training materials relevant to your stack and evidence of completion.",
       "actions": [
         {
           "label": "Capture training materials screenshot",
@@ -200,8 +214,8 @@
     },
     {
       "id": "13",
-      "title": "Provide a screenshot of how you communicate new features to customers",
-      "description": "This can be your public docs, a Slack channel, email newsletter, changelog page, or anything else you use to communicate product updates to customers.",
+      "title": "Customer Feature Communication",
+      "description": "Provide a screenshot of how you communicate new features to customers. This can be your public docs, a Slack channel, email newsletter, changelog page, or anything else you use to communicate product updates to customers.",
       "actions": [
         {
           "label": "Capture customer changelog screenshot",
@@ -213,8 +227,8 @@
     },
     {
       "id": "14",
-      "title": "Provide a screenshot of how you communicate new features to employees",
-      "description": "This can be your internal docs, a Slack channel, team meetings, or anything else you use to communicate product updates to employees.",
+      "title": "Employee Feature Communication",
+      "description": "Provide a screenshot of how you communicate new features to employees. This can be your internal docs, a Slack channel, team meetings, or anything else you use to communicate product updates to employees.",
       "actions": [
         {
           "label": "Capture internal communication screenshot",
@@ -226,7 +240,7 @@
     },
     {
       "id": "15",
-      "title": "Provide an annual employee feedback template",
+      "title": "Annual Employee Feedback",
       "description": "Provide an annual employee feedback template that is signed by employees and contractors.",
       "actions": [
         {
@@ -239,13 +253,13 @@
     },
     {
       "id": "16",
-      "title": "Provide a DRP and screenshots showing it in practice",
+      "title": "Disaster Recovery Plan (DRP)",
       "description": "Provide a Disaster Recovery Plan (DRP) that shows the process of how you recover from a disaster. The screenshots show that you actually recovered from a disaster."
     },
     {
       "id": "17_18_19",
-      "title": "Provide Risk Registry + screenshot of calendar invite + meeting minutes",
-      "description": "A risk registry documents identified risks, their likelihood, impact, and mitigation strategies. Include evidence of regular risk review meetings.",
+      "title": "Risk Registry",
+      "description": "Provide Risk Registry + screenshot of calendar invite + meeting minutes. A risk registry documents identified risks, their likelihood, impact, and mitigation strategies. Include evidence of regular risk review meetings.",
       "actions": [
         {
           "label": "Capture Risk Review calendar invites",

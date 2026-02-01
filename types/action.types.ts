@@ -6,7 +6,7 @@ export interface ActionInput {
 
 export interface TodoAction {
   label: string
-  type: "url" | "route" | "generate" | "capture" | "copyTemplate"
+  type: "url" | "route" | "generate" | "capture" | "copyTemplate" | "script"
   url?: string
   route?: string
   template?: string
