@@ -5,7 +5,7 @@ import { getAuthenticatedBrowser, getSessionStatus } from "./browser-session"
 
 export interface ScreenshotConfig {
   repoName: string
-  count: number
+  prNumbers: string
   ticketPattern: string
   linearCompanyName: string
 }
@@ -21,6 +21,7 @@ interface ScreenshotResult {
 interface PRInfo {
   url: string
   title: string
+  prNumber: number
 }
 
 export class AuthRequiredError extends Error {
@@ -93,7 +94,7 @@ async function injectTimestampOverlay(page: Page): Promise<void> {
 export async function takeTicketScreenshots(
   config: ScreenshotConfig,
 ): Promise<ScreenshotResult[]> {
-  const { repoName, count, ticketPattern, linearCompanyName } = config
+  const { repoName, prNumbers, ticketPattern, linearCompanyName } = config
   const results: ScreenshotResult[] = []
 
   // Check if we have valid authentication
@@ -107,14 +108,26 @@ export async function takeTicketScreenshots(
     )
   }
 
+  // Parse PR numbers from comma-separated string
+  const prNumbersArray = prNumbers
+    .split(",")
+    .map((n) => n.trim())
+    .filter((n) => /^\d+$/.test(n))
+    .map((n) => parseInt(n, 10))
+
+  if (prNumbersArray.length === 0) {
+    throw new Error("No valid PR numbers provided")
+  }
+
   // Ensure screenshots directory exists
-  const repoSlug = repoName.replace("/", "-")
+  // Extract repo name only (after the slash)
+  const repoNameOnly = repoName.split("/")[1] || repoName
   const baseScreenshotDir = path.join(
     process.cwd(),
     "user-data",
     "screenshots",
     "tickets",
-    repoSlug,
+    repoNameOnly,
   )
 
   // Get authenticated browser
@@ -141,59 +154,105 @@ export async function takeTicketScreenshots(
     const githubCookies = await context.cookies("https://github.com")
     console.log(`Found ${githubCookies.length} GitHub cookies`)
 
-    // Navigate to the closed PRs page
-    const prListUrl = `https://github.com/${repoName}/pulls?q=is%3Apr+is%3Aclosed`
-    console.log(`Navigating to: ${prListUrl}`)
-    await page.goto(prListUrl, {
-      waitUntil: "domcontentloaded",
-      timeout: 60000,
-    })
-    await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
-      console.log("Network idle timeout - continuing anyway")
-    })
-
-    // Debug: Check if we're logged in by looking for GitHub UI elements
-    const isLoggedIn = await page.evaluate(() => {
-      // Check for the user menu which only appears when logged in
-      return (
-        !!document.querySelector("[data-login]") ||
-        !!document.querySelector('meta[name="user-login"]')
-      )
-    })
-    console.log(
-      `GitHub login status: ${isLoggedIn ? "Logged in" : "NOT logged in"}`,
-    )
-
-    if (!isLoggedIn) {
-      throw new Error("Not logged in to GitHub. Please re-authenticate.")
-    }
-
-    // Wait for PR list to load
-    await page
-      .waitForSelector('[data-testid="issue-row"]', { timeout: 10000 })
-      .catch(() => {
-        // Alternative selector for older GitHub UI
-        return page.waitForSelector(".js-issue-row", { timeout: 5000 })
-      })
-
-    // Get the latest closed PRs
-    const prElements = await page.$$('[data-testid="issue-row"], .js-issue-row')
+    // Build list of PRs to process by directly navigating to each PR
     const prsToProcess: PRInfo[] = []
 
-    for (let i = 0; i < Math.min(count, prElements.length); i++) {
-      const prElement = prElements[i]
-      const linkElement = await prElement.$(
-        'a[data-hovercard-type="pull_request"], .js-navigation-open',
-      )
-      if (linkElement) {
-        const href = await linkElement.getAttribute("href")
-        const title = await linkElement.textContent()
-        if (href && title) {
-          prsToProcess.push({
-            url: `https://github.com${href}`,
-            title: title.trim(),
+    for (const prNumber of prNumbersArray) {
+      const prUrl = `https://github.com/${repoName}/pull/${prNumber}`
+      console.log(`Fetching PR #${prNumber}: ${prUrl}`)
+
+      try {
+        await page.goto(prUrl, {
+          waitUntil: "domcontentloaded",
+          timeout: 60000,
+        })
+        await page
+          .waitForLoadState("networkidle", { timeout: 10000 })
+          .catch(() => {
+            console.log("Network idle timeout - continuing anyway")
           })
+
+        // Debug: Check if we're logged in by looking for GitHub UI elements
+        const isLoggedIn = await page.evaluate(() => {
+          // Check for the user menu which only appears when logged in
+          return (
+            !!document.querySelector("[data-login]") ||
+            !!document.querySelector('meta[name="user-login"]')
+          )
+        })
+
+        if (!isLoggedIn) {
+          throw new Error("Not logged in to GitHub. Please re-authenticate.")
         }
+
+        // Wait for content to load - try multiple approaches
+        await Promise.race([
+          page.waitForSelector(".js-issue-title", { timeout: 5000 }),
+          page.waitForSelector("h1", { timeout: 5000 }),
+          page.waitForTimeout(3000),
+        ]).catch(() => {
+          console.log("Timeout waiting for title selector")
+        })
+
+        // Get PR title - use innerText which is more reliable than textContent
+        const titleData = await page.evaluate(() => {
+          // Get the actual text from various possible locations
+          let foundTitle = null
+          let foundSelector = null
+
+          // Method 1: Look for js-issue-title class
+          const issueTitle = document.querySelector(".js-issue-title")
+          if (issueTitle && issueTitle.innerText?.trim()) {
+            foundTitle = issueTitle.innerText.trim()
+            foundSelector = ".js-issue-title"
+          }
+
+          // Method 2: Look for specific aria-label on edit button near title
+          if (!foundTitle) {
+            const editButton = document.querySelector(
+              'button[aria-label*="Edit pull request title"]',
+            )
+            if (editButton) {
+              const titleContainer = editButton.closest("div")?.querySelector("bdi")
+              if (titleContainer && titleContainer.innerText?.trim()) {
+                foundTitle = titleContainer.innerText.trim()
+                foundSelector = "via edit button"
+              }
+            }
+          }
+
+          // Method 3: Get from page title meta
+          if (!foundTitle) {
+            const titleMeta = document.querySelector('meta[property="og:title"]')
+            if (titleMeta) {
+              const content = titleMeta.getAttribute("content")
+              // Extract just the title part (before " by ")
+              if (content) {
+                const match = content.match(/^([^·]+)/)
+                if (match) {
+                  foundTitle = match[1].trim()
+                  foundSelector = "og:title meta"
+                }
+              }
+            }
+          }
+
+          return { title: foundTitle, selector: foundSelector }
+        })
+
+        if (titleData.title) {
+          prsToProcess.push({
+            url: prUrl,
+            title: titleData.title,
+            prNumber: prNumber,
+          })
+          console.log(`  Title: ${titleData.title} (via ${titleData.selector})`)
+        } else {
+          console.log(`  Warning: Could not extract title for PR #${prNumber}`)
+        }
+      } catch (error) {
+        console.error(`Error fetching PR #${prNumber}:`, error)
+        // Continue with other PRs
       }
     }
 
@@ -210,10 +269,10 @@ export async function takeTicketScreenshots(
 
       const { fullMatch } = ticketInfo
       const linearUrl = `https://linear.app/${linearCompanyName}/issue/${fullMatch}`
-      const ticketDir = path.join(baseScreenshotDir, fullMatch)
+      const prDir = path.join(baseScreenshotDir, String(pr.prNumber))
 
-      // Ensure ticket directory exists
-      fs.mkdirSync(ticketDir, { recursive: true })
+      // Ensure PR directory exists
+      fs.mkdirSync(prDir, { recursive: true })
 
       const result: ScreenshotResult = {
         ticketId: fullMatch,
@@ -241,13 +300,24 @@ export async function takeTicketScreenshots(
         )
         await page.waitForTimeout(1000) // Wait for any lazy-loaded content
 
+        // Zoom out to 67% to capture more content
+        await page.evaluate(() => {
+          document.body.style.zoom = "0.67"
+        })
+        await page.waitForTimeout(500) // Wait for zoom to apply
+
         // Inject timestamp overlay before taking screenshot
         await injectTimestampOverlay(page)
 
         // Take GitHub screenshot
-        const githubScreenshotPath = path.join(ticketDir, "github-ss.png")
-        await page.screenshot({ path: githubScreenshotPath, fullPage: false })
+        const githubScreenshotPath = path.join(prDir, "github-ss.png")
+        await page.screenshot({ path: githubScreenshotPath, fullPage: true })
         console.log(`GitHub screenshot saved: ${githubScreenshotPath}`)
+
+        // Reset zoom
+        await page.evaluate(() => {
+          document.body.style.zoom = "1"
+        })
 
         // 2. Navigate to Linear ticket and take screenshot
         console.log(`Navigating to Linear: ${linearUrl}`)
@@ -268,7 +338,7 @@ export async function takeTicketScreenshots(
         await injectTimestampOverlay(page)
 
         // Take Linear screenshot
-        const linearScreenshotPath = path.join(ticketDir, "linear-ss.png")
+        const linearScreenshotPath = path.join(prDir, "linear-ss.png")
         await page.screenshot({ path: linearScreenshotPath, fullPage: false })
         console.log(`Linear screenshot saved: ${linearScreenshotPath}`)
 

@@ -21,7 +21,7 @@ const STORAGE_KEY = "ticket-screenshots-config"
 
 interface StoredConfig {
   repoName: string
-  count: number
+  prNumbers: string
   ticketPattern: string
   linearCompanyName: string
 }
@@ -34,7 +34,7 @@ interface ScreenshotResult {
 
 export default function TicketScreenshotsPage() {
   const [repoName, setRepoName] = useState("")
-  const [count, setCount] = useState(5)
+  const [prNumbers, setPrNumbers] = useState("")
   const [ticketPattern, setTicketPattern] = useState("")
   const [linearCompanyName, setLinearCompanyName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -68,7 +68,7 @@ export default function TicketScreenshotsPage() {
       if (saved) {
         const config: StoredConfig = JSON.parse(saved)
         setRepoName(config.repoName || "")
-        setCount(config.count || 5)
+        setPrNumbers(config.prNumbers || "")
         setTicketPattern(config.ticketPattern || "")
         setLinearCompanyName(config.linearCompanyName || "")
       }
@@ -84,12 +84,12 @@ export default function TicketScreenshotsPage() {
     if (!isInitialized) return
     const config: StoredConfig = {
       repoName,
-      count,
+      prNumbers,
       ticketPattern,
       linearCompanyName,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-  }, [repoName, count, ticketPattern, linearCompanyName, isInitialized])
+  }, [repoName, prNumbers, ticketPattern, linearCompanyName, isInitialized])
 
   const handleAuthenticate = async () => {
     setIsAuthenticating(true)
@@ -131,7 +131,7 @@ export default function TicketScreenshotsPage() {
 
   const runTakeScreenshots = useCallback(async () => {
     // Load config from localStorage to ensure we have the latest values
-    let currentConfig = { repoName, count, ticketPattern, linearCompanyName }
+    let currentConfig = { repoName, prNumbers, ticketPattern, linearCompanyName }
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
@@ -143,6 +143,7 @@ export default function TicketScreenshotsPage() {
 
     if (
       !currentConfig.repoName ||
+      !currentConfig.prNumbers ||
       !currentConfig.ticketPattern ||
       !currentConfig.linearCompanyName
     ) {
@@ -161,7 +162,7 @@ export default function TicketScreenshotsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           repoName: currentConfig.repoName,
-          count: currentConfig.count,
+          prNumbers: currentConfig.prNumbers,
           ticketPattern: currentConfig.ticketPattern,
           linearCompanyName: currentConfig.linearCompanyName,
         }),
@@ -208,7 +209,7 @@ export default function TicketScreenshotsPage() {
     } finally {
       setIsProcessing(false)
     }
-  }, [repoName, count, ticketPattern, linearCompanyName, checkAuthStatus])
+  }, [repoName, prNumbers, ticketPattern, linearCompanyName, checkAuthStatus])
 
   async function handleTakeScreenshots() {
     await runTakeScreenshots()
@@ -316,17 +317,16 @@ export default function TicketScreenshotsPage() {
           </FieldWrapper>
 
           <FieldWrapper
-            label="Number of PRs"
-            description="How many recent closed PRs to process"
-            htmlFor="count"
+            label="PR Numbers"
+            description="Comma-separated PR numbers to process (e.g., 123, 456, 789)"
+            htmlFor="prNumbers"
           >
             <Input
-              id="count"
-              type="number"
-              min={1}
-              max={50}
-              value={count}
-              onChange={(e) => setCount(parseInt(e.target.value) || 1)}
+              id="prNumbers"
+              type="text"
+              value={prNumbers}
+              onChange={(e) => setPrNumbers(e.target.value)}
+              placeholder="123, 456, 789"
             />
           </FieldWrapper>
 

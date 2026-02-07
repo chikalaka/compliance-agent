@@ -100,7 +100,7 @@ export async function createFoldersInDrive(
     console.log(`Navigating to Google Drive folder: ${folderUrl}`)
     await page.goto(folderUrl, {
       waitUntil: "networkidle",
-      timeout: 60000,
+      timeout: 10000,
     })
 
     // Wait for Drive UI to load - try multiple selectors with generous timeout

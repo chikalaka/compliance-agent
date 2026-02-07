@@ -62,9 +62,8 @@ export async function POST(request: NextRequest) {
 
     // Extract unique todo IDs
     const todoIds = templateData.todos
-      .map((todo) => todo.id)
-      .filter((id) => id !== "00") // Exclude id "00" since it's the instruction todo
-      .sort() // Sort to ensure consistent ordering
+      .filter((todo) => todo.id !== "00")
+      .map((todo) => todo.id + "_" + todo.title)
 
     if (todoIds.length === 0) {
       return NextResponse.json(

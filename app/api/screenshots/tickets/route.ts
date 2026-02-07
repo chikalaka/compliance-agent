@@ -10,11 +10,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate required fields
-    const { repoName, count, ticketPattern, linearCompanyName } = body
+    const { repoName, prNumbers, ticketPattern, linearCompanyName } = body
 
     if (!repoName || typeof repoName !== "string") {
       return NextResponse.json(
         { error: "Repository name is required" },
+        { status: 400 },
+      )
+    }
+
+    if (!prNumbers || typeof prNumbers !== "string") {
+      return NextResponse.json(
+        { error: "PR numbers are required" },
+        { status: 400 },
+      )
+    }
+
+    // Validate PR numbers format
+    const prNumbersArray = prNumbers
+      .split(",")
+      .map((n) => n.trim())
+      .filter((n) => /^\d+$/.test(n))
+
+    if (prNumbersArray.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid PR numbers format. Please provide comma-separated numbers (e.g., 123, 456, 789)",
+        },
         { status: 400 },
       )
     }
@@ -33,17 +56,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const parsedCount = typeof count === "number" ? count : parseInt(count, 10)
-    if (isNaN(parsedCount) || parsedCount < 1 || parsedCount > 50) {
-      return NextResponse.json(
-        { error: "Count must be a number between 1 and 50" },
-        { status: 400 },
-      )
-    }
-
     const config: ScreenshotConfig = {
       repoName: repoName.trim(),
-      count: parsedCount,
+      prNumbers: prNumbers.trim(),
       ticketPattern: ticketPattern.trim(),
       linearCompanyName: linearCompanyName.trim(),
     }
