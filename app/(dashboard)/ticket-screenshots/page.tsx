@@ -21,7 +21,7 @@ const STORAGE_KEY = "ticket-screenshots-config"
 
 interface StoredConfig {
   repoName: string
-  prNumbers: string
+  commitHashes: string
   ticketPattern: string
   linearCompanyName: string
 }
@@ -34,7 +34,7 @@ interface ScreenshotResult {
 
 export default function TicketScreenshotsPage() {
   const [repoName, setRepoName] = useState("")
-  const [prNumbers, setPrNumbers] = useState("")
+  const [commitHashes, setCommitHashes] = useState("")
   const [ticketPattern, setTicketPattern] = useState("")
   const [linearCompanyName, setLinearCompanyName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -68,7 +68,7 @@ export default function TicketScreenshotsPage() {
       if (saved) {
         const config: StoredConfig = JSON.parse(saved)
         setRepoName(config.repoName || "")
-        setPrNumbers(config.prNumbers || "")
+        setCommitHashes(config.commitHashes || "")
         setTicketPattern(config.ticketPattern || "")
         setLinearCompanyName(config.linearCompanyName || "")
       }
@@ -84,12 +84,12 @@ export default function TicketScreenshotsPage() {
     if (!isInitialized) return
     const config: StoredConfig = {
       repoName,
-      prNumbers,
+      commitHashes,
       ticketPattern,
       linearCompanyName,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-  }, [repoName, prNumbers, ticketPattern, linearCompanyName, isInitialized])
+  }, [repoName, commitHashes, ticketPattern, linearCompanyName, isInitialized])
 
   const handleAuthenticate = async () => {
     setIsAuthenticating(true)
@@ -131,7 +131,7 @@ export default function TicketScreenshotsPage() {
 
   const runTakeScreenshots = useCallback(async () => {
     // Load config from localStorage to ensure we have the latest values
-    let currentConfig = { repoName, prNumbers, ticketPattern, linearCompanyName }
+    let currentConfig = { repoName, commitHashes, ticketPattern, linearCompanyName }
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
@@ -143,7 +143,7 @@ export default function TicketScreenshotsPage() {
 
     if (
       !currentConfig.repoName ||
-      !currentConfig.prNumbers ||
+      !currentConfig.commitHashes ||
       !currentConfig.ticketPattern ||
       !currentConfig.linearCompanyName
     ) {
@@ -162,7 +162,7 @@ export default function TicketScreenshotsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           repoName: currentConfig.repoName,
-          prNumbers: currentConfig.prNumbers,
+          commitHashes: currentConfig.commitHashes,
           ticketPattern: currentConfig.ticketPattern,
           linearCompanyName: currentConfig.linearCompanyName,
         }),
@@ -209,7 +209,7 @@ export default function TicketScreenshotsPage() {
     } finally {
       setIsProcessing(false)
     }
-  }, [repoName, prNumbers, ticketPattern, linearCompanyName, checkAuthStatus])
+  }, [repoName, commitHashes, ticketPattern, linearCompanyName, checkAuthStatus])
 
   async function handleTakeScreenshots() {
     await runTakeScreenshots()
@@ -317,16 +317,16 @@ export default function TicketScreenshotsPage() {
           </FieldWrapper>
 
           <FieldWrapper
-            label="PR Numbers"
-            description="Comma-separated PR numbers to process (e.g., 123, 456, 789)"
-            htmlFor="prNumbers"
+            label="Commit Hashes"
+            description="Comma-separated commit hashes to process (e.g., 5320fd0,0c6190a,306382a)"
+            htmlFor="commitHashes"
           >
             <Input
-              id="prNumbers"
+              id="commitHashes"
               type="text"
-              value={prNumbers}
-              onChange={(e) => setPrNumbers(e.target.value)}
-              placeholder="123, 456, 789"
+              value={commitHashes}
+              onChange={(e) => setCommitHashes(e.target.value)}
+              placeholder="5320fd0,0c6190a,306382a"
             />
           </FieldWrapper>
 

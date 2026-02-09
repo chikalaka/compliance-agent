@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate required fields
-    const { repoName, prNumbers, ticketPattern, linearCompanyName } = body
+    const { repoName, commitHashes, ticketPattern, linearCompanyName } = body
 
     if (!repoName || typeof repoName !== "string") {
       return NextResponse.json(
@@ -19,24 +19,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!prNumbers || typeof prNumbers !== "string") {
+    if (!commitHashes || typeof commitHashes !== "string") {
       return NextResponse.json(
-        { error: "PR numbers are required" },
+        { error: "Commit hashes are required" },
         { status: 400 },
       )
     }
 
-    // Validate PR numbers format
-    const prNumbersArray = prNumbers
+    // Validate commit hashes format
+    const commitHashesArray = commitHashes
       .split(",")
-      .map((n) => n.trim())
-      .filter((n) => /^\d+$/.test(n))
+      .map((h) => h.trim())
+      .filter((h) => /^[a-f0-9]{7,40}$/i.test(h))
 
-    if (prNumbersArray.length === 0) {
+    if (commitHashesArray.length === 0) {
       return NextResponse.json(
         {
           error:
-            "Invalid PR numbers format. Please provide comma-separated numbers (e.g., 123, 456, 789)",
+            "Invalid commit hash format. Please provide comma-separated commit hashes (e.g., 5320fd0,0c6190a,306382a)",
         },
         { status: 400 },
       )
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const config: ScreenshotConfig = {
       repoName: repoName.trim(),
-      prNumbers: prNumbers.trim(),
+      commitHashes: commitHashes.trim(),
       ticketPattern: ticketPattern.trim(),
       linearCompanyName: linearCompanyName.trim(),
     }

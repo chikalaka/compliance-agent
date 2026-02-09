@@ -5,7 +5,7 @@ import { getAuthenticatedBrowser, getSessionStatus } from "./browser-session"
 
 export interface ScreenshotConfig {
   repoName: string
-  prNumbers: string
+  commitHashes: string
   ticketPattern: string
   linearCompanyName: string
 }
@@ -19,9 +19,9 @@ interface ScreenshotResult {
 }
 
 interface PRInfo {
-  url: string
+  prUrl: string
   title: string
-  prNumber: number
+  commitHash: string
 }
 
 export class AuthRequiredError extends Error {
@@ -94,7 +94,7 @@ async function injectTimestampOverlay(page: Page): Promise<void> {
 export async function takeTicketScreenshots(
   config: ScreenshotConfig,
 ): Promise<ScreenshotResult[]> {
-  const { repoName, prNumbers, ticketPattern, linearCompanyName } = config
+  const { repoName, commitHashes, ticketPattern, linearCompanyName } = config
   const results: ScreenshotResult[] = []
 
   // Check if we have valid authentication
@@ -108,15 +108,14 @@ export async function takeTicketScreenshots(
     )
   }
 
-  // Parse PR numbers from comma-separated string
-  const prNumbersArray = prNumbers
+  // Parse commit hashes from comma-separated string
+  const commitHashesArray = commitHashes
     .split(",")
-    .map((n) => n.trim())
-    .filter((n) => /^\d+$/.test(n))
-    .map((n) => parseInt(n, 10))
+    .map((h) => h.trim())
+    .filter((h) => /^[a-f0-9]{7,40}$/i.test(h))
 
-  if (prNumbersArray.length === 0) {
-    throw new Error("No valid PR numbers provided")
+  if (commitHashesArray.length === 0) {
+    throw new Error("No valid commit hashes provided")
   }
 
   // Ensure screenshots directory exists
@@ -157,17 +156,17 @@ export async function takeTicketScreenshots(
     // Build list of PRs to process by directly navigating to each PR
     const prsToProcess: PRInfo[] = []
 
-    for (const prNumber of prNumbersArray) {
-      const prUrl = `https://github.com/${repoName}/pull/${prNumber}`
-      console.log(`Fetching PR #${prNumber}: ${prUrl}`)
+    for (const commitHash of commitHashesArray) {
+      const commitUrl = `https://github.com/${repoName}/commit/${commitHash}`
+      console.log(`Fetching Commit ${commitHash}: ${commitUrl}`)
 
       try {
-        await page.goto(prUrl, {
+        await page.goto(commitUrl, {
           waitUntil: "domcontentloaded",
-          timeout: 60000,
+          timeout: 2000,
         })
         await page
-          .waitForLoadState("networkidle", { timeout: 10000 })
+          .waitForLoadState("networkidle", { timeout: 1000 })
           .catch(() => {
             console.log("Network idle timeout - continuing anyway")
           })
@@ -185,74 +184,87 @@ export async function takeTicketScreenshots(
           throw new Error("Not logged in to GitHub. Please re-authenticate.")
         }
 
-        // Wait for content to load - try multiple approaches
-        await Promise.race([
-          page.waitForSelector(".js-issue-title", { timeout: 5000 }),
-          page.waitForSelector("h1", { timeout: 5000 }),
-          page.waitForTimeout(3000),
-        ]).catch(() => {
-          console.log("Timeout waiting for title selector")
-        })
+        // Wait for content to load
+        await page.waitForTimeout(1000)
 
-        // Get PR title - use innerText which is more reliable than textContent
-        const titleData = await page.evaluate(() => {
-          // Get the actual text from various possible locations
-          let foundTitle = null
-          let foundSelector = null
-
-          // Method 1: Look for js-issue-title class
-          const issueTitle = document.querySelector(".js-issue-title")
-          if (issueTitle && issueTitle.innerText?.trim()) {
-            foundTitle = issueTitle.innerText.trim()
-            foundSelector = ".js-issue-title"
-          }
-
-          // Method 2: Look for specific aria-label on edit button near title
-          if (!foundTitle) {
-            const editButton = document.querySelector(
-              'button[aria-label*="Edit pull request title"]',
-            )
-            if (editButton) {
-              const titleContainer = editButton.closest("div")?.querySelector("bdi")
-              if (titleContainer && titleContainer.innerText?.trim()) {
-                foundTitle = titleContainer.innerText.trim()
-                foundSelector = "via edit button"
-              }
+        // Find the PR link from the commit page
+        const prUrl = await page.evaluate(() => {
+          // Look for PR link in the commit page - typically in the header area
+          // Pattern: "Pull request: #123"
+          const prLinks = Array.from(
+            document.querySelectorAll('a[href*="/pull/"]'),
+          )
+          for (const link of prLinks) {
+            const href = (link as HTMLAnchorElement).href
+            const match = href.match(/\/pull\/(\d+)/)
+            if (match) {
+              return href
             }
           }
+          return null
+        })
 
-          // Method 3: Get from page title meta
-          if (!foundTitle) {
-            const titleMeta = document.querySelector('meta[property="og:title"]')
+        if (prUrl) {
+          console.log(`  Found PR: ${prUrl}`)
+
+          // Now navigate to the PR page to get the actual title
+          await page.goto(prUrl, {
+            waitUntil: "domcontentloaded",
+            timeout: 5000,
+          })
+          await page
+            .waitForLoadState("networkidle", { timeout: 2000 })
+            .catch(() => {
+              console.log("Network idle timeout - continuing anyway")
+            })
+
+          // Wait for PR page to load
+          await page.waitForTimeout(1000)
+
+          // Extract PR title from the PR page
+          const title = await page.evaluate(() => {
+            // Method 1: Look for js-issue-title class
+            const issueTitle = document.querySelector(".js-issue-title")
+            if (issueTitle && issueTitle.textContent?.trim()) {
+              return issueTitle.textContent.trim()
+            }
+
+            // Method 2: Look for bdi element in header
+            const bdiElement = document.querySelector("bdi")
+            if (bdiElement && bdiElement.textContent?.trim()) {
+              return bdiElement.textContent.trim()
+            }
+
+            // Method 3: Get from page title meta
+            const titleMeta = document.querySelector(
+              'meta[property="og:title"]',
+            )
             if (titleMeta) {
               const content = titleMeta.getAttribute("content")
-              // Extract just the title part (before " by ")
               if (content) {
+                // Extract just the title part (before " by ")
                 const match = content.match(/^([^·]+)/)
                 if (match) {
-                  foundTitle = match[1].trim()
-                  foundSelector = "og:title meta"
+                  return match[1].trim()
                 }
               }
             }
-          }
 
-          return { title: foundTitle, selector: foundSelector }
-        })
-
-        if (titleData.title) {
-          prsToProcess.push({
-            url: prUrl,
-            title: titleData.title,
-            prNumber: prNumber,
+            return "Unknown Title"
           })
-          console.log(`  Title: ${titleData.title} (via ${titleData.selector})`)
+
+          prsToProcess.push({
+            prUrl: prUrl,
+            title: title,
+            commitHash: commitHash,
+          })
+          console.log(`  Title: ${title}`)
         } else {
-          console.log(`  Warning: Could not extract title for PR #${prNumber}`)
+          console.log(`  Warning: Could not find PR for Commit ${commitHash}`)
         }
       } catch (error) {
-        console.error(`Error fetching PR #${prNumber}:`, error)
-        // Continue with other PRs
+        console.error(`Error fetching Commit ${commitHash}:`, error)
+        // Continue with other commits
       }
     }
 
@@ -269,48 +281,52 @@ export async function takeTicketScreenshots(
 
       const { fullMatch } = ticketInfo
       const linearUrl = `https://linear.app/${linearCompanyName}/issue/${fullMatch}`
-      const prDir = path.join(baseScreenshotDir, String(pr.prNumber))
+      const prDir = path.join(baseScreenshotDir, pr.commitHash)
 
       // Ensure PR directory exists
       fs.mkdirSync(prDir, { recursive: true })
 
       const result: ScreenshotResult = {
         ticketId: fullMatch,
-        prUrl: pr.url,
+        prUrl: pr.prUrl,
         linearUrl,
         success: false,
       }
 
       try {
         // 1. Navigate to GitHub PR and take screenshot
-        console.log(`Processing PR: ${pr.url}`)
-        await page.goto(pr.url, {
+        console.log(`Processing PR: ${pr.prUrl}`)
+        await page.goto(pr.prUrl, {
           waitUntil: "domcontentloaded",
-          timeout: 60000,
+          timeout: 10000, // 15 seconds
         })
         await page
-          .waitForLoadState("networkidle", { timeout: 10000 })
+          .waitForLoadState("networkidle", { timeout: 3000 })
           .catch(() => {
             console.log("Network idle timeout - continuing anyway")
           })
 
-        // Scroll to bottom of PR page
-        await page.evaluate(() =>
-          window.scrollTo(0, document.body.scrollHeight),
-        )
+        // Scroll to bottom, then up 200px
+        await page.evaluate(() => {
+          const scrollHeight = document.body.scrollHeight
+          const viewportHeight = window.innerHeight
+          const bottomPosition = scrollHeight - viewportHeight
+          const scrollPosition = Math.max(0, bottomPosition - 200)
+          window.scrollTo(0, scrollPosition)
+        })
         await page.waitForTimeout(1000) // Wait for any lazy-loaded content
 
-        // Zoom out to 67% to capture more content
-        await page.evaluate(() => {
-          document.body.style.zoom = "0.67"
-        })
-        await page.waitForTimeout(500) // Wait for zoom to apply
+        // // Zoom out to 67% to capture more content
+        // await page.evaluate(() => {
+        //   document.body.style.zoom = "0.9"
+        // })
+        // await page.waitForTimeout(500) // Wait for zoom to apply
 
         // Inject timestamp overlay before taking screenshot
         await injectTimestampOverlay(page)
 
-        // Take GitHub screenshot
-        const githubScreenshotPath = path.join(prDir, "github-ss.png")
+        // Take GitHub screenshot - capture only the viewport (bottom portion)
+        const githubScreenshotPath = path.join(prDir, "github.png")
         await page.screenshot({ path: githubScreenshotPath, fullPage: true })
         console.log(`GitHub screenshot saved: ${githubScreenshotPath}`)
 
@@ -323,22 +339,24 @@ export async function takeTicketScreenshots(
         console.log(`Navigating to Linear: ${linearUrl}`)
         await page.goto(linearUrl, {
           waitUntil: "domcontentloaded",
-          timeout: 60000,
+          timeout: 10000, // 30 seconds - Linear can be slow to load
         })
+
+        // Wait for Linear to fully render (it's an SPA)
+        await page.waitForTimeout(3000)
+
+        // Try to wait for network idle, but don't fail if it times out
         await page
-          .waitForLoadState("networkidle", { timeout: 10000 })
+          .waitForLoadState("networkidle", { timeout: 2000 })
           .catch(() => {
             console.log("Network idle timeout - continuing anyway")
           })
-
-        // Wait for Linear page to fully load
-        await page.waitForTimeout(2000)
 
         // Inject timestamp overlay before taking screenshot
         await injectTimestampOverlay(page)
 
         // Take Linear screenshot
-        const linearScreenshotPath = path.join(prDir, "linear-ss.png")
+        const linearScreenshotPath = path.join(prDir, "linear.png")
         await page.screenshot({ path: linearScreenshotPath, fullPage: false })
         console.log(`Linear screenshot saved: ${linearScreenshotPath}`)
 
