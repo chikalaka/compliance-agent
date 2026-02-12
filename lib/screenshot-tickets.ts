@@ -2,6 +2,7 @@ import { Browser, BrowserContext, Page } from "playwright"
 import * as fs from "fs"
 import * as path from "path"
 import { getAuthenticatedBrowser, getSessionStatus } from "./browser-session"
+import { injectTimestampOverlay } from "./injectOverlay"
 
 export interface ScreenshotConfig {
   repoName: string
@@ -60,31 +61,6 @@ function extractTicketId(
     }
   }
   return null
-}
-
-/**
- * Injects a timestamp overlay at the bottom right of the page before taking a screenshot.
- */
-async function injectTimestampOverlay(page: Page): Promise<void> {
-  const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19)
-  await page.evaluate((ts) => {
-    const overlay = document.createElement("div")
-    overlay.id = "screenshot-timestamp"
-    overlay.textContent = ts
-    overlay.style.cssText = `
-      position: fixed;
-      bottom: 12px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.75);
-      color: white;
-      padding: 6px 12px;
-      font-family: monospace;
-      font-size: 12px;
-      border-radius: 4px;
-      z-index: 999999;
-    `
-    document.body.appendChild(overlay)
-  }, timestamp)
 }
 
 /**
@@ -163,10 +139,10 @@ export async function takeTicketScreenshots(
       try {
         await page.goto(commitUrl, {
           waitUntil: "domcontentloaded",
-          timeout: 2000,
+          timeout: 10000,
         })
         await page
-          .waitForLoadState("networkidle", { timeout: 1000 })
+          .waitForLoadState("networkidle", { timeout: 5000 })
           .catch(() => {
             console.log("Network idle timeout - continuing anyway")
           })
@@ -185,7 +161,7 @@ export async function takeTicketScreenshots(
         }
 
         // Wait for content to load
-        await page.waitForTimeout(1000)
+        await page.waitForTimeout(5000)
 
         // Find the PR link from the commit page
         const prUrl = await page.evaluate(() => {
@@ -210,16 +186,16 @@ export async function takeTicketScreenshots(
           // Now navigate to the PR page to get the actual title
           await page.goto(prUrl, {
             waitUntil: "domcontentloaded",
-            timeout: 5000,
+            timeout: 10000,
           })
           await page
-            .waitForLoadState("networkidle", { timeout: 2000 })
+            .waitForLoadState("networkidle", { timeout: 3000 })
             .catch(() => {
               console.log("Network idle timeout - continuing anyway")
             })
 
           // Wait for PR page to load
-          await page.waitForTimeout(1000)
+          await page.waitForTimeout(2000)
 
           // Extract PR title from the PR page
           const title = await page.evaluate(() => {
@@ -298,34 +274,18 @@ export async function takeTicketScreenshots(
         console.log(`Processing PR: ${pr.prUrl}`)
         await page.goto(pr.prUrl, {
           waitUntil: "domcontentloaded",
-          timeout: 10000, // 15 seconds
+          timeout: 15000, // 15 seconds
         })
         await page
-          .waitForLoadState("networkidle", { timeout: 3000 })
+          .waitForLoadState("networkidle", { timeout: 5000 })
           .catch(() => {
             console.log("Network idle timeout - continuing anyway")
           })
 
-        // Scroll to bottom, then up 200px
-        await page.evaluate(() => {
-          const scrollHeight = document.body.scrollHeight
-          const viewportHeight = window.innerHeight
-          const bottomPosition = scrollHeight - viewportHeight
-          const scrollPosition = Math.max(0, bottomPosition - 200)
-          window.scrollTo(0, scrollPosition)
-        })
-        await page.waitForTimeout(1000) // Wait for any lazy-loaded content
-
-        // // Zoom out to 67% to capture more content
-        // await page.evaluate(() => {
-        //   document.body.style.zoom = "0.9"
-        // })
-        // await page.waitForTimeout(500) // Wait for zoom to apply
-
         // Inject timestamp overlay before taking screenshot
         await injectTimestampOverlay(page)
 
-        // Take GitHub screenshot - capture only the viewport (bottom portion)
+        // Take GitHub screenshot - full page
         const githubScreenshotPath = path.join(prDir, "github.png")
         await page.screenshot({ path: githubScreenshotPath, fullPage: true })
         console.log(`GitHub screenshot saved: ${githubScreenshotPath}`)
@@ -339,15 +299,15 @@ export async function takeTicketScreenshots(
         console.log(`Navigating to Linear: ${linearUrl}`)
         await page.goto(linearUrl, {
           waitUntil: "domcontentloaded",
-          timeout: 10000, // 30 seconds - Linear can be slow to load
+          timeout: 15000, // 30 seconds - Linear can be slow to load
         })
 
         // Wait for Linear to fully render (it's an SPA)
-        await page.waitForTimeout(3000)
+        await page.waitForTimeout(5000)
 
         // Try to wait for network idle, but don't fail if it times out
         await page
-          .waitForLoadState("networkidle", { timeout: 2000 })
+          .waitForLoadState("networkidle", { timeout: 3000 })
           .catch(() => {
             console.log("Network idle timeout - continuing anyway")
           })

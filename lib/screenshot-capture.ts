@@ -2,6 +2,7 @@ import { Browser, BrowserContext, Page } from "playwright"
 import * as fs from "fs"
 import * as path from "path"
 import { getAuthenticatedBrowser, getSessionStatus } from "./browser-session"
+import { injectTimestampOverlay } from "./injectOverlay"
 
 export interface CaptureConfig {
   url: string
@@ -40,31 +41,6 @@ export class AuthRequiredError extends Error {
     super(message)
     this.name = "AuthRequiredError"
   }
-}
-
-/**
- * Injects a timestamp overlay at the bottom right of the page before taking a screenshot.
- */
-async function injectTimestampOverlay(page: Page): Promise<void> {
-  const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19)
-  await page.evaluate((ts) => {
-    const overlay = document.createElement("div")
-    overlay.id = "screenshot-timestamp"
-    overlay.textContent = ts
-    overlay.style.cssText = `
-      position: fixed;
-      bottom: 12px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.75);
-      color: white;
-      padding: 6px 12px;
-      font-family: monospace;
-      font-size: 12px;
-      border-radius: 4px;
-      z-index: 999999;
-    `
-    document.body.appendChild(overlay)
-  }, timestamp)
 }
 
 /**

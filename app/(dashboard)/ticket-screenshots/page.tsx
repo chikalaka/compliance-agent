@@ -12,6 +12,8 @@ import {
   AlertCircle,
   KeyRound,
   RefreshCw,
+  Plus,
+  Trash2,
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -19,9 +21,14 @@ import { SessionStatus } from "@/types/browser-auth.types"
 
 const STORAGE_KEY = "ticket-screenshots-config"
 
-interface StoredConfig {
+interface RepoRow {
+  id: string
   repoName: string
   commitHashes: string
+}
+
+interface StoredConfig {
+  repoRows: RepoRow[]
   ticketPattern: string
   linearCompanyName: string
 }
@@ -30,11 +37,13 @@ interface ScreenshotResult {
   ticketId: string
   success: boolean
   error?: string
+  repoName?: string
 }
 
 export default function TicketScreenshotsPage() {
-  const [repoName, setRepoName] = useState("")
-  const [commitHashes, setCommitHashes] = useState("")
+  const [repoRows, setRepoRows] = useState<RepoRow[]>([
+    { id: crypto.randomUUID(), repoName: "", commitHashes: "" },
+  ])
   const [ticketPattern, setTicketPattern] = useState("")
   const [linearCompanyName, setLinearCompanyName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -66,9 +75,28 @@ export default function TicketScreenshotsPage() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
-        const config: StoredConfig = JSON.parse(saved)
-        setRepoName(config.repoName || "")
-        setCommitHashes(config.commitHashes || "")
+        const config = JSON.parse(saved)
+        
+        // Migration: Handle old format with single repo
+        if (config.repoName !== undefined && config.commitHashes !== undefined) {
+          // Old format - migrate to new format
+          setRepoRows([
+            {
+              id: crypto.randomUUID(),
+              repoName: config.repoName || "",
+              commitHashes: config.commitHashes || "",
+            },
+          ])
+        } else if (config.repoRows && Array.isArray(config.repoRows)) {
+          // New format - ensure all rows have IDs
+          setRepoRows(
+            config.repoRows.map((row: RepoRow) => ({
+              ...row,
+              id: row.id || crypto.randomUUID(),
+            }))
+          )
+        }
+        
         setTicketPattern(config.ticketPattern || "")
         setLinearCompanyName(config.linearCompanyName || "")
       }
@@ -83,13 +111,40 @@ export default function TicketScreenshotsPage() {
   useEffect(() => {
     if (!isInitialized) return
     const config: StoredConfig = {
-      repoName,
-      commitHashes,
+      repoRows,
       ticketPattern,
       linearCompanyName,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-  }, [repoName, commitHashes, ticketPattern, linearCompanyName, isInitialized])
+  }, [repoRows, ticketPattern, linearCompanyName, isInitialized])
+
+  // Row management functions
+  const addRow = () => {
+    setRepoRows([
+      ...repoRows,
+      {
+        id: crypto.randomUUID(),
+        repoName: "",
+        commitHashes: "",
+      },
+    ])
+  }
+
+  const removeRow = (id: string) => {
+    if (repoRows.length > 1) {
+      setRepoRows(repoRows.filter((row) => row.id !== id))
+    }
+  }
+
+  const updateRow = (
+    id: string,
+    field: keyof Omit<RepoRow, "id">,
+    value: string
+  ) => {
+    setRepoRows(
+      repoRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+    )
+  }
 
   const handleAuthenticate = async () => {
     setIsAuthenticating(true)
@@ -131,24 +186,37 @@ export default function TicketScreenshotsPage() {
 
   const runTakeScreenshots = useCallback(async () => {
     // Load config from localStorage to ensure we have the latest values
-    let currentConfig = { repoName, commitHashes, ticketPattern, linearCompanyName }
+    let currentRepoRows = repoRows
+    let currentTicketPattern = ticketPattern
+    let currentLinearCompanyName = linearCompanyName
+    
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
-        currentConfig = JSON.parse(saved)
+        const config = JSON.parse(saved)
+        currentRepoRows = config.repoRows || repoRows
+        currentTicketPattern = config.ticketPattern || ticketPattern
+        currentLinearCompanyName = config.linearCompanyName || linearCompanyName
       }
     } catch {
       // Use state values as fallback
     }
 
-    if (
-      !currentConfig.repoName ||
-      !currentConfig.commitHashes ||
-      !currentConfig.ticketPattern ||
-      !currentConfig.linearCompanyName
-    ) {
+    // Validate - filter out empty rows
+    const validRows = currentRepoRows.filter(
+      (row) => row.repoName.trim() && row.commitHashes.trim()
+    )
+
+    if (validRows.length === 0) {
+      toast.error("No valid repositories", {
+        description: "Please add at least one repository with commit hashes.",
+      })
+      return
+    }
+
+    if (!currentTicketPattern || !currentLinearCompanyName) {
       toast.error("Missing required fields", {
-        description: "Please fill in all fields before taking screenshots.",
+        description: "Please fill in ticket pattern and Linear company name.",
       })
       return
     }
@@ -161,10 +229,12 @@ export default function TicketScreenshotsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          repoName: currentConfig.repoName,
-          commitHashes: currentConfig.commitHashes,
-          ticketPattern: currentConfig.ticketPattern,
-          linearCompanyName: currentConfig.linearCompanyName,
+          repositories: validRows.map((row) => ({
+            repoName: row.repoName,
+            commitHashes: row.commitHashes,
+          })),
+          ticketPattern: currentTicketPattern,
+          linearCompanyName: currentLinearCompanyName,
         }),
       })
 
@@ -209,7 +279,7 @@ export default function TicketScreenshotsPage() {
     } finally {
       setIsProcessing(false)
     }
-  }, [repoName, commitHashes, ticketPattern, linearCompanyName, checkAuthStatus])
+  }, [repoRows, ticketPattern, linearCompanyName, checkAuthStatus])
 
   async function handleTakeScreenshots() {
     await runTakeScreenshots()
@@ -299,62 +369,104 @@ export default function TicketScreenshotsPage() {
 
       <Card>
         <CardContent className="space-y-6">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Configuration
-          </h3>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Repositories
+              </h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                Add repositories and their commit hashes to process
+              </p>
+            </div>
 
-          <FieldWrapper
-            label="Repository Name"
-            description="GitHub repository in format: owner/repo-name"
-            htmlFor="repoName"
-          >
-            <Input
-              id="repoName"
-              value={repoName}
-              onChange={(e) => setRepoName(e.target.value)}
-              placeholder="acme-org/backend-api"
-            />
-          </FieldWrapper>
+            <div className="space-y-3">
+              {repoRows.map((row, index) => (
+                <div
+                  key={row.id}
+                  className="flex items-start gap-3 p-4 border border-zinc-200 rounded-lg dark:border-zinc-800"
+                >
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 block">
+                        Repository Name
+                      </label>
+                      <Input
+                        value={row.repoName}
+                        onChange={(e) =>
+                          updateRow(row.id, "repoName", e.target.value)
+                        }
+                        placeholder="owner/repo-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 block">
+                        Commit Hashes
+                      </label>
+                      <Input
+                        value={row.commitHashes}
+                        onChange={(e) =>
+                          updateRow(row.id, "commitHashes", e.target.value)
+                        }
+                        placeholder="5320fd0,0c6190a,306382a"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeRow(row.id)}
+                    disabled={repoRows.length === 1}
+                    className="mt-7"
+                    title="Remove repository"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
 
-          <FieldWrapper
-            label="Commit Hashes"
-            description="Comma-separated commit hashes to process (e.g., 5320fd0,0c6190a,306382a)"
-            htmlFor="commitHashes"
-          >
-            <Input
-              id="commitHashes"
-              type="text"
-              value={commitHashes}
-              onChange={(e) => setCommitHashes(e.target.value)}
-              placeholder="5320fd0,0c6190a,306382a"
-            />
-          </FieldWrapper>
+            <Button onClick={addRow} variant="outline" className="w-full">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Repository
+            </Button>
+          </div>
 
-          <FieldWrapper
-            label="Ticket Pattern"
-            description="Pattern to extract ticket IDs from PR titles (e.g., PRJ-* matches PRJ-123)"
-            htmlFor="ticketPattern"
-          >
-            <Input
-              id="ticketPattern"
-              value={ticketPattern}
-              onChange={(e) => setTicketPattern(e.target.value)}
-              placeholder="PRJ-*"
-            />
-          </FieldWrapper>
+          <div className="border-t border-zinc-200 dark:border-zinc-800 pt-6 space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Global Settings
+              </h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                These settings apply to all repositories
+              </p>
+            </div>
 
-          <FieldWrapper
-            label="Linear Company Name"
-            description="Your Linear workspace name for constructing ticket URLs"
-            htmlFor="linearCompanyName"
-          >
-            <Input
-              id="linearCompanyName"
-              value={linearCompanyName}
-              onChange={(e) => setLinearCompanyName(e.target.value)}
-              placeholder="acme"
-            />
-          </FieldWrapper>
+            <FieldWrapper
+              label="Ticket Pattern"
+              description="Pattern to extract ticket IDs from PR titles (e.g., PRJ-* matches PRJ-123)"
+              htmlFor="ticketPattern"
+            >
+              <Input
+                id="ticketPattern"
+                value={ticketPattern}
+                onChange={(e) => setTicketPattern(e.target.value)}
+                placeholder="PRJ-*"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper
+              label="Linear Company Name"
+              description="Your Linear workspace name for constructing ticket URLs"
+              htmlFor="linearCompanyName"
+            >
+              <Input
+                id="linearCompanyName"
+                value={linearCompanyName}
+                onChange={(e) => setLinearCompanyName(e.target.value)}
+                placeholder="acme"
+              />
+            </FieldWrapper>
+          </div>
         </CardContent>
       </Card>
 
@@ -384,27 +496,46 @@ export default function TicketScreenshotsPage() {
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               Results
             </h3>
-            <div className="space-y-2">
-              {results.map((result) => (
-                <div
-                  key={result.ticketId}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800"
-                >
-                  {result.success ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-red-500" />
-                  )}
-                  <div className="flex-1">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {result.ticketId}
-                    </p>
-                    {result.error && (
-                      <p className="text-sm text-red-500">{result.error}</p>
-                    )}
+            <div className="space-y-4">
+              {(() => {
+                // Group results by repository
+                const resultsByRepo = results.reduce((acc, result) => {
+                  const repo = result.repoName || "Unknown"
+                  if (!acc[repo]) acc[repo] = []
+                  acc[repo].push(result)
+                  return acc
+                }, {} as Record<string, ScreenshotResult[]>)
+
+                return Object.entries(resultsByRepo).map(([repo, repoResults]) => (
+                  <div key={repo} className="space-y-2">
+                    <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+                      {repo}
+                    </h4>
+                    <div className="space-y-2">
+                      {repoResults.map((result, idx) => (
+                        <div
+                          key={`${result.ticketId}-${idx}`}
+                          className="flex items-center gap-3 rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800"
+                        >
+                          {result.success ? (
+                            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                          ) : (
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                          )}
+                          <div className="flex-1">
+                            <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                              {result.ticketId}
+                            </p>
+                            {result.error && (
+                              <p className="text-sm text-red-500">{result.error}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              })()}
             </div>
           </CardContent>
         </Card>
